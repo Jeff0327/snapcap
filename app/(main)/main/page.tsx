@@ -1,10 +1,14 @@
 import React from 'react';
 import Banner from "@/components/main/Banner";
 
-function Page() {
+import {supabase} from "@/utils/supabase";
+
+async function Page() {
+    const { data: { user } } = await supabase.auth.getUser();
+
     return (
         <div>
-           <Banner/>
+           <Banner user={user}/>
             <div className={'p-12'}>
                 <h1 className={'text-2xl font-Nanum'}>BEST</h1>
 
