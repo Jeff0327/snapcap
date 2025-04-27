@@ -1,11 +1,11 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { User } from "@supabase/supabase-js"; // 경로 수정
+import { User } from "@supabase/supabase-js";
 import {
     HoverCard,
     HoverCardContent,
     HoverCardTrigger,
-} from "@/components/ui/hover-card"; // shadcn/ui 컴포넌트 경로
+} from "@/components/ui/hover-card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 
@@ -43,6 +43,7 @@ function Banner({ user }: { user: User | null }) {
 
         return () => clearInterval(timer); // 컴포넌트 언마운트 시 타이머 정리
     }, [slides.length]);
+
 
     return (
         <main>

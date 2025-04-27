@@ -1,9 +1,15 @@
 import Link from "next/link";
 import RandomImage from "@/components/login/RandomImage";
 import LoginForm from "@/components/login/LoginForm";
+import {createClient} from "@/utils/server";
 
-function Page() {
+async function Page() {
 
+    const supabase = await createClient()
+
+    const {data:{user}} = await supabase.auth.getUser()
+
+    console.log(user)
     return (
         <div className={'grid grid-cols-1 md:grid-cols-2 items-center h-screen'}>
             <div className={'flex justify-center items-center h-full bg-white p-8'}>

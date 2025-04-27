@@ -1,14 +1,12 @@
 'use client'
 import React from 'react';
 import FormContainer, {FormState} from "@/components/ui/form";
-import {signIn, signInWithGoogle, signInWithKakao} from "@/app/(main)/login/actions";
+import {signIn} from "@/app/(main)/login/actions";
 import Link from "next/link";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import useAlert from "@/lib/notiflix/useAlert";
 import {useRouter} from "next/navigation";
-import { FcGoogle } from "react-icons/fc";
-import { RiKakaoTalkFill } from "react-icons/ri";
-import {supabase} from "@/utils/supabase";
+import SocialLogin from "@/components/login/SocialLogin";
 
 function LoginForm() {
     const {notify} = useAlert()
@@ -22,44 +20,6 @@ function LoginForm() {
             notify.failure('아이디 비밀번호를 확인해주세요.')
         }
     }
-
-    const handleGoogleLogin = async () => {
-        try {
-            const result = await signInWithGoogle();
-            if(result.code === ERROR_CODES.SUCCESS) {
-                notify.success('구글 계정으로 로그인되었습니다.');
-                router.push('/');
-            } else {
-                notify.failure('구글 로그인 중 오류가 발생했습니다.');
-            }
-        } catch (error) {
-            notify.failure('구글 로그인 처리 중 오류가 발생했습니다.');
-        }
-    }
-
-    const handleKakaoLogin = async () => {
-        try {
-            const { data, error } = await supabase.auth.signInWithOAuth({
-                provider: 'kakao',
-                options: {
-                    redirectTo: `${window.location.origin}/auth/callback`,
-                    skipBrowserRedirect: false // 이 옵션이 중요합니다
-                }
-            });
-
-            if (error) throw error;
-
-            // 리다이렉션 URL로 직접 이동
-            if (data?.url) {
-                window.location.href = data.url;
-            } else {
-                notify.failure('카카오 로그인 URL을 가져오는데 실패했습니다.');
-            }
-        } catch (error) {
-            console.error('카카오 로그인 처리 오류:', error);
-            notify.failure('카카오 로그인 중 오류가 발생했습니다.');
-        }
-    };
 
     return (
         <FormContainer action={signIn} onResult={handleResult}>
@@ -129,26 +89,7 @@ function LoginForm() {
                 <span className="text-sm text-gray-500">또는</span>
                 <div className="border-t border-gray-300 flex-grow ml-3"></div>
             </div>
-
-            <div className="mt-4 space-y-3">
-                <button
-                    type="button"
-                    onClick={handleGoogleLogin}
-                    className="group relative w-full flex justify-center items-center py-2 px-4 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                >
-                    <FcGoogle className="w-5 h-5 mr-2" />
-                    구글로 로그인
-                </button>
-
-                <button
-                    type="button"
-                    onClick={handleKakaoLogin}
-                    className="group relative w-full flex justify-center items-center py-2 px-4 border border-yellow-500 text-sm font-medium rounded-md text-yellow-900 bg-yellow-400 hover:bg-yellow-300 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-yellow-500"
-                >
-                    <RiKakaoTalkFill className="w-5 h-5 mr-2" />
-                    카카오로 로그인
-                </button>
-            </div>
+            <SocialLogin/>
         </FormContainer>
     );
 }
