@@ -116,7 +116,7 @@ export async function signInWithKakao(): Promise<FormState> {
                 message: error.message
             };
         }
-
+        console.log('asd:',data)
         // 카카오 로그인은 리다이렉션을 통해 처리되므로 URL 반환
         return {
             code: ERROR_CODES.SUCCESS,

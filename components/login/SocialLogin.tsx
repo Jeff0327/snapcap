@@ -1,10 +1,11 @@
 'use client'
-import React from 'react';
+import React, {useEffect} from 'react';
 import {FcGoogle} from "react-icons/fc";
 import {RiKakaoTalkFill} from "react-icons/ri";
 import {signInWithGoogle, signInWithKakao} from "@/app/(main)/login/actions";
 import {useRouter} from "next/navigation";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
+import {createClientComponentClient} from "@supabase/auth-helpers-nextjs";
 
 interface SocialAuthData {
     url: string;
@@ -12,7 +13,20 @@ interface SocialAuthData {
 }
 function SocialLogin() {
     const router = useRouter();
+    const supabase = createClientComponentClient();
 
+    // 현재 세션 확인 (소셜 로그인 완료 후 콜백에서 리다이렉트된 경우를 위함)
+    useEffect(() => {
+        const checkSession = async () => {
+            const { data: { session } } = await supabase.auth.getSession();
+            if (session) {
+                console.log('세션 확인됨:', session.user);
+                // 필요하다면 여기서 사용자 정보를 상태나 DB에 저장하는 로직 추가
+            }
+        };
+
+        checkSession();
+    }, []);
     const handleSocialLogin = async (provider: 'kakao' | 'google') => {
         try {
             const result = provider === 'kakao'
@@ -25,7 +39,7 @@ function SocialLogin() {
                     router.push(result.redirect);
                 } else if (result.data && typeof result.data === 'object' && 'url' in result.data) {
                     // OAuth 제공자가 반환한 URL로 리디렉션
-                    window.location.href = result.data.url as string;
+                    router.push(result.redirect|| '/')
                 }
             }
         } catch (error) {

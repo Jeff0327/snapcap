@@ -1,11 +1,17 @@
 import React, {ReactNode} from 'react';
 import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
+import {createClient} from "@/utils/server";
 
-function Layout({children}:{children:ReactNode}) {
+async function Layout({children}:{children:ReactNode}) {
+
+    const supabase = await createClient()
+    const {data:{user}}=await supabase.auth.getUser();
+
+    console.log(user)
     return (
         <div>
-            <Header/>
+            <Header user={user}/>
             {children}
             <Footer/>
         </div>

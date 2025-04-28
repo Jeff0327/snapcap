@@ -9,7 +9,6 @@ async function Page() {
 
     const {data:{user}} = await supabase.auth.getUser()
 
-    console.log(user)
     return (
         <div className={'grid grid-cols-1 md:grid-cols-2 items-center h-screen'}>
             <div className={'flex justify-center items-center h-full bg-white p-8'}>

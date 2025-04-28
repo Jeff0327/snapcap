@@ -9,7 +9,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 
-function Banner({ user }: { user: User | null }) {
+function Banner() {
     const [activeSlide, setActiveSlide] = useState(0);
     const [visible, setVisible] = useState(true);
 
@@ -61,46 +61,6 @@ function Banner({ user }: { user: User | null }) {
                         <h2 className="text-4xl text-white font-bold">{slides[activeSlide].text}</h2>
                     </div>
                 </div>
-
-                {/* 사용자 정보 HoverCard (로그인한 경우에만 표시) */}
-                {user && (
-                    <div className="absolute top-5 right-5 z-10">
-                        <HoverCard>
-                            <HoverCardTrigger asChild>
-                                <button className="flex items-center space-x-2 bg-white bg-opacity-80 rounded-full px-4 py-2 shadow-md transition-all hover:bg-opacity-100">
-                                    <Avatar>
-                                        <AvatarImage src={user.user_metadata?.avatar_url || ''} />
-                                        <AvatarFallback>{user.email?.substring(0, 2).toUpperCase() || 'UN'}</AvatarFallback>
-                                    </Avatar>
-                                    <span className="font-medium">{user.email?.split('@')[0]}</span>
-                                </button>
-                            </HoverCardTrigger>
-                            <HoverCardContent className="w-80">
-                                <div className="flex justify-between space-x-4">
-                                    <Avatar>
-                                        <AvatarImage src={user.user_metadata?.avatar_url || ''} />
-                                        <AvatarFallback>{user.email?.substring(0, 2).toUpperCase() || 'UN'}</AvatarFallback>
-                                    </Avatar>
-                                    <div className="space-y-1">
-                                        <h4 className="text-sm font-semibold">{user.user_metadata?.full_name || user.email?.split('@')[0]}</h4>
-                                        <p className="text-sm text-gray-500">{user.email}</p>
-                                        <div className="flex items-center pt-2">
-                                            <span className="bg-green-100 text-green-800 text-xs px-2 py-1 rounded">활성 계정</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="mt-4 border-t pt-4">
-                                    <p className="text-xs text-gray-500">
-                                        계정 ID: {user.id.substring(0, 8)}...
-                                    </p>
-                                    <p className="text-xs text-gray-500">
-                                        가입일: {new Date(user.created_at || '').toLocaleDateString()}
-                                    </p>
-                                </div>
-                            </HoverCardContent>
-                        </HoverCard>
-                    </div>
-                )}
             </div>
         </main>
     );

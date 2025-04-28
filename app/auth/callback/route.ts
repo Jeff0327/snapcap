@@ -1,24 +1,27 @@
-import { createClient } from "@/utils/server";
-import { NextResponse } from "next/server";
+// app/auth/callback/route.ts
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
+import { NextRequest, NextResponse } from 'next/server';
 
-export async function GET(request: Request) {
-    // The `/auth/callback` route is required for the server-side auth flow implemented
-    // by the SSR package. It exchanges an auth code for the user's session.
+export async function GET(request: NextRequest) {
     const requestUrl = new URL(request.url);
-    const code = requestUrl.searchParams.get("code");
-    const origin = requestUrl.origin;
-
-    const redirectTo = requestUrl.searchParams.get("redirect_to")?.toString();
+    const code = requestUrl.searchParams.get('code');
 
     if (code) {
-        const supabase = await createClient();
+        const cookieStore = cookies();
+        const supabase = createRouteHandlerClient({ cookies: () => cookieStore });
+
+        // Exchange code for session
         await supabase.auth.exchangeCodeForSession(code);
+
+        // 세션 교환 후 사용자 정보 확인 (디버깅용)
+        const { data: { user } } = await supabase.auth.getUser();
+        console.log('콜백에서 사용자 확인:', user);
+
+        // 인증 후 리다이렉트할 경로
+        return NextResponse.redirect(new URL('/', request.url));
     }
 
-    if (redirectTo) {
-        return NextResponse.redirect(`${origin}${redirectTo}`);
-    }
-
-    // URL to redirect to after sign up process completes
-    return NextResponse.redirect(`${origin}/`);
+    // code가 없는 경우 로그인 페이지로 리다이렉트
+    return NextResponse.redirect(new URL('/login', request.url));
 }

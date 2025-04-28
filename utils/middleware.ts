@@ -3,9 +3,6 @@ import { type NextRequest, NextResponse } from "next/server";
 
 export async function updateSession(request: NextRequest) {
     try {
-        console.log('미들웨어 실행 - URL:', request.nextUrl.pathname);
-        console.log('쿠키 확인:', request.cookies.getAll().map(c => c.name));
-
         // 기본 응답 생성
         let response = NextResponse.next();
 
@@ -74,5 +71,5 @@ export async function updateSession(request: NextRequest) {
 
 // 미들웨어를 적용할 경로 설정
 export const config = {
-    matcher: ["/", "/login", "/register", "/dashboard/:path*"],
+    matcher: ["/", "/login", "/register", "/dashboard/:path*","/auth/callback"],
 };
