@@ -1,15 +1,25 @@
 import React from 'react';
 import Link from "next/link";
-import {Button} from "@/components/ui/button";
 
 function Footer() {
     return (
         <footer className="py-8 bg-black text-gray-300">
             <div className="container px-4 mx-auto">
                 <div className="grid grid-cols-1 gap-8 md:grid-cols-3">
-                    <div>
-                        <h3 className="mb-4 text-lg font-bold text-white">HAT STORE</h3>
-                        <p className="text-sm">최고 품질의 모자를 제공하는 프리미엄 모자 전문점입니다.</p>
+                    <div className={'flex flex-col'}>
+                        <h3 className="mb-4 text-2xl font-bold text-white">스냅캡</h3>
+                        <div className={'flex flex-row items-center gap-1'}>
+                            <span className={'text-sm font-semibold text-white/80'}>사업자 등록번호 :</span>
+                            <p className={'text-sm'}>531-20-02039</p>
+                        </div>
+                        <div className={'flex flex-row items-center gap-1'}>
+                            <span className={'text-sm font-semibold text-white/80'}>통신판매업 신고번호 :</span>
+                            <p className={'text-sm'}>2023-전북군산-0484</p>
+                        </div>
+                        <div className={'flex flex-row items-center gap-1'}>
+                            <span className={'text-sm font-semibold text-white/80'}>개인정보 보호책임자 :</span>
+                            <p className={'text-sm'}>김지섭</p>
+                        </div>
                     </div>
                     <div>
                         <h4 className="mb-4 text-sm font-bold text-white">링크</h4>

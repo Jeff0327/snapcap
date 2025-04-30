@@ -47,7 +47,7 @@ function Banner() {
 
     return (
         <main>
-            <div className="w-full h-[80vh] flex flex-col items-center justify-center bg-green-100 relative">
+            <div className="w-full h-[40vh] lg:h-[80vh] flex flex-col items-center justify-center bg-green-100 relative">
                 {/* 슬라이드 내용 */}
                 <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
                     <Image

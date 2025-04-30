@@ -8,7 +8,6 @@ async function Layout({children}:{children:ReactNode}) {
     const supabase = await createClient()
     const {data:{user}}=await supabase.auth.getUser();
 
-    console.log(user)
     return (
         <div>
             <Header user={user}/>

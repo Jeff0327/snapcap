@@ -158,7 +158,7 @@ const useAlert = (): UseNotiflixReturn => {
             }),
     };
 
-    const confirm: ConfirmMethod = (title: string, message: string, okText: string, cancelText: string) => {
+    const confirm = (title: string, message: string, okText = '확인', cancelText = '취소'): Promise<boolean> => {
         return new Promise<boolean>((resolve) => {
             Notiflix.Confirm.show(
                 title,

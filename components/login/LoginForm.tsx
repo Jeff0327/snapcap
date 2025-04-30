@@ -7,8 +7,9 @@ import {ERROR_CODES} from "@/utils/ErrorMessage";
 import useAlert from "@/lib/notiflix/useAlert";
 import {useRouter} from "next/navigation";
 import SocialLogin from "@/components/login/SocialLogin";
+import {User} from "@supabase/supabase-js";
 
-function LoginForm() {
+function LoginForm({user}:{user:User|null}) {
     const {notify} = useAlert()
     const router = useRouter()
 

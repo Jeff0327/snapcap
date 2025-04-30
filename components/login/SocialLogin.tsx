@@ -6,6 +6,7 @@ import {signInWithGoogle, signInWithKakao} from "@/app/(main)/login/actions";
 import {useRouter} from "next/navigation";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import {createClientComponentClient} from "@supabase/auth-helpers-nextjs";
+import {User} from "@supabase/supabase-js";
 
 interface SocialAuthData {
     url: string;
@@ -13,20 +14,8 @@ interface SocialAuthData {
 }
 function SocialLogin() {
     const router = useRouter();
-    const supabase = createClientComponentClient();
 
-    // 현재 세션 확인 (소셜 로그인 완료 후 콜백에서 리다이렉트된 경우를 위함)
-    useEffect(() => {
-        const checkSession = async () => {
-            const { data: { session } } = await supabase.auth.getSession();
-            if (session) {
-                console.log('세션 확인됨:', session.user);
-                // 필요하다면 여기서 사용자 정보를 상태나 DB에 저장하는 로직 추가
-            }
-        };
 
-        checkSession();
-    }, []);
     const handleSocialLogin = async (provider: 'kakao' | 'google') => {
         try {
             const result = provider === 'kakao'
@@ -34,13 +23,20 @@ function SocialLogin() {
                 : await signInWithGoogle();
 
             if (result.code === ERROR_CODES.SUCCESS) {
-                if (result.redirect) {
+                if (result.data && typeof result.data === 'object' && 'url' in result.data) {
+                    // OAuth 제공자가 반환한 URL로 리다이렉션
+                    const authUrl = (result.data as SocialAuthData).url;
+                    window.location.href = authUrl;
+
+                } else if (result.redirect) {
                     // 서버 액션에서 제공한 리디렉션 경로 사용
                     router.push(result.redirect);
-                } else if (result.data && typeof result.data === 'object' && 'url' in result.data) {
-                    // OAuth 제공자가 반환한 URL로 리디렉션
-                    router.push(result.redirect|| '/')
+                } else {
+                    // 기본 리다이렉션
+                    router.push('/');
                 }
+            } else {
+                console.error('소셜 로그인 오류:', result.message);
             }
         } catch (error) {
             console.error('로그인 처리 중 오류 발생:', error);

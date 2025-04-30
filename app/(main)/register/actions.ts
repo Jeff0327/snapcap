@@ -20,7 +20,7 @@ export async function signUp(formData: FormData) {
         }
 
         // Create the user with Supabase Auth
-        const { data, error } = await supabase.auth.signUp({
+        const { error } = await supabase.auth.signUp({
             email,
             password,
             options: {
@@ -36,7 +36,6 @@ export async function signUp(formData: FormData) {
         if (error) {
             console.error('Supabase auth error:', error);
 
-            // Check for duplicate email
             if (error.message.includes('email') && error.message.includes('already')) {
                 return {
                     code: ERROR_CODES.EMAIL_EXISTS,
@@ -50,10 +49,9 @@ export async function signUp(formData: FormData) {
             };
         }
 
-        // Success!
         return {
             code: ERROR_CODES.SUCCESS,
-            message: '회원가입이 완료되었습니다. 이메일 확인을 부탁드립니다.',
+            message: '회원가입이 완료되었습니다.',
             redirect: '/login'
         };
 
