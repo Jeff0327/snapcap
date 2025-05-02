@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 
 interface TagsInputProps {
     onChange: (tags: string[]) => void;
+    defaultValue:string[] | []
 }
 
 const TagsInput = ({ onChange }: TagsInputProps) => {

@@ -2,10 +2,10 @@ import { NextRequest, NextResponse } from 'next/server';
 import crypto from "crypto";
 import { AdminClient } from "@/utils/adminClient";
 import { createClient } from "@/utils/server";
-import { States } from "@/types";
+import {FormState} from "@/components/ui/form";
+import {ERROR_CODES} from "@/utils/ErrorMessage";
 
 export async function POST(request: NextRequest) {
-    console.log("이미지 업로드 요청 받음");
 
     try {
         const { searchParams } = new URL(request.url);
@@ -69,11 +69,11 @@ export async function POST(request: NextRequest) {
             const result = await uploadImage(file);
             console.log("업로드 결과:", result);
 
-            if (result.success) {
+            if (result.code===ERROR_CODES.SUCCESS) {
                 return NextResponse.json({ success: true, data: result.data });
             } else {
                 return NextResponse.json(
-                    { success: false, error: result.error },
+                    { code:ERROR_CODES.SERVER_ERROR, message:'업로드 서버 에러' },
                     { status: 500 }
                 );
             }
@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
     }
 }
 
-async function uploadImage(file: File): Promise<States> {
+async function uploadImage(file: File): Promise<FormState> {
     try {
         console.log("Supabase 클라이언트 생성");
         const supabase = AdminClient();
@@ -103,38 +103,36 @@ async function uploadImage(file: File): Promise<States> {
         const { data: { user } } = await supabaseClient.auth.getUser();
 
         if (!user) {
-            console.error("사용자 인증 실패");
-            return { success: false, data: '', error: '사용자 인증 실패: 사용자 정보를 찾을 수 없습니다.' };
+            return {
+                code:ERROR_CODES.DB_ERROR,
+                message:'사용자 정보를 찾을 수 없습니다.'
+            }
         }
-
-        console.log("인증된 사용자:", user.id);
 
         // 파일명 생성 (고유성 보장)
         const fileExt = file.name.split('.').pop();
         const fileName = `${Date.now()}_${crypto.randomUUID()}.${fileExt}`;
-        console.log("생성된 파일명:", fileName);
 
-        console.log("스토리지에 파일 업로드 시작");
         const { error: uploadError } = await supabase.storage
             .from('products')
             .upload(fileName, file);
 
         if (uploadError) {
-            console.error("파일 업로드 오류:", uploadError);
-            return { success: false, data: '', error: '이미지 업로드 실패: ' + uploadError.message };
+            return {
+                code:ERROR_CODES.DB_ERROR,
+                message:'파일 업로드 오류'
+            };
         }
 
-        console.log("업로드 성공, 공개 URL 가져오기");
         // 업로드된 이미지의 공개 URL 가져오기
         const { data: { publicUrl } } = supabase.storage
             .from('products')
             .getPublicUrl(fileName);
-
-        console.log("공개 URL:", publicUrl);
-        return { success: true, data: publicUrl, error: '' };
+        
+        return { code:ERROR_CODES.SUCCESS, data: publicUrl ,message:''};
     } catch (error: any) {
-        console.error("이미지 업로드 함수 오류:", error);
-        return { success: false, data: '', error: error.message || 'Unknown error' };
+
+        return { code:ERROR_CODES.SERVER_ERROR, message:'이미지 업로드 서버오류' };
     }
 }
 

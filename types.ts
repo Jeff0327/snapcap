@@ -6,3 +6,10 @@ export interface States {
     data: any | null;
     error: string | null;
 }
+export interface ColorOption {
+    code: string;
+    name: string;
+}
+export type ProductsJson = Products & {
+    colors:ColorOption[]
+}

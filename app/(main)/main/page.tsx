@@ -1,13 +1,20 @@
 import React from 'react';
 import Banner from "@/components/main/Banner";
+import ProductList from "@/components/main/ProductList";
+import { ProductList as fetchProducts } from "@/app/(main)/main/actions";
 
 async function Page() {
+    const result = await fetchProducts();
+    const products = result.data || [];
 
     return (
         <div>
             <Banner/>
             <div className={'p-5 lg:p-12'}>
-                <h1 className={'text-lg lg:text-2xl font-Nanum'}>BEST</h1>
+                <ProductList
+                    products={products}
+                    title="BEST"
+                />
             </div>
         </div>
     );

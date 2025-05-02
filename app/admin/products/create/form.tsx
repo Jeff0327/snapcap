@@ -9,13 +9,14 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import ImageUploader from "@/components/admin/products/ImageUploader";
-import ColorVariantInput from "@/components/admin/products/ColorVariantInput";
-import TagsInput from "@/components/admin/products/TagsInput";
+// import ColorVariantInput from "@/components/admin/products/ColorVariantInput";
+// import TagsInput from "@/components/admin/products/TagsInput";
 import Editor from "@/lib/editor/Editor";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import FormContainer, {FormState} from "@/components/ui/form";
 import {SubmitButton} from "@/components/ui/SubmitButton";
 
+//ColorVariantInput ,TagInput params 수정!!
 const ProductCreateForm = () => {
     const { notify, loading } = useAlert();
     const router = useRouter();
@@ -168,12 +169,12 @@ const ProductCreateForm = () => {
 
             <div className="mb-6">
                 <Label className="block mb-2 font-semibold">색상 옵션</Label>
-                <ColorVariantInput />
+                {/*<ColorVariantInput />*/}
             </div>
 
             <div className="mb-6">
                 <Label className="block mb-2 font-semibold">태그</Label>
-                <TagsInput onChange={handleTagsChange} />
+                {/*<TagsInput onChange={handleTagsChange} />*/}
                 {tags.map((tag, index) => (
                     <input key={index} type="hidden" name={`tags[${index}]`} value={tag} />
                 ))}

@@ -9,7 +9,7 @@ interface ColorOption {
     code: string;
 }
 
-const ColorVariantInput = () => {
+const ColorVariantInput = ({defaultValue}:{defaultValue:string | ''}) => {
     const [colors, setColors] = useState<ColorOption[]>([
         { name: '블랙', code: '#000000' }
     ]);

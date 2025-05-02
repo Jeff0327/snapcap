@@ -41,9 +41,11 @@ import { Label } from "@/components/ui/label";
 import { ERROR_CODES } from "@/utils/ErrorMessage";
 import FormContainer from "@/components/ui/form";
 import { Products } from "@/types";
+import {useLoading} from "@/components/layout/LoadingProvider";
 
 export function ProductList({ products }: {products: Products[];}) {
-    const { notify, confirm, loading } = useAlert();
+    const { notify, confirm } = useAlert();
+    const { showLoading, hideLoading } = useLoading();
     const [selectedProducts, setSelectedProducts] = useState<string[]>([]);
     const [searchTerm, setSearchTerm] = useState('');
     const [sortField, setSortField] = useState<keyof Products>('created_at');
@@ -122,7 +124,7 @@ export function ProductList({ products }: {products: Products[];}) {
         );
 
         if (result) {
-            loading.start();
+            showLoading()
 
             const formData = new FormData();
             formData.append('productId', id);
@@ -137,7 +139,7 @@ export function ProductList({ products }: {products: Products[];}) {
                 notify.failure(deleteResult.message);
             }
 
-            loading.remove();
+            hideLoading()
         }
     };
 
@@ -157,7 +159,7 @@ export function ProductList({ products }: {products: Products[];}) {
         );
 
         if (result) {
-            loading.start();
+            showLoading()
 
             // 순차적으로 삭제 처리
             let successCount = 0;
@@ -186,7 +188,7 @@ export function ProductList({ products }: {products: Products[];}) {
             // 선택 목록 초기화
             setSelectedProducts([]);
 
-            loading.remove();
+            hideLoading()
         }
     };
 
@@ -196,7 +198,7 @@ export function ProductList({ products }: {products: Products[];}) {
         formData.append('productId', id);
         formData.append('isActive', isActive.toString());
 
-        loading.start();
+        showLoading()
 
         const result = await toggleProductStatus(formData);
 
@@ -206,7 +208,7 @@ export function ProductList({ products }: {products: Products[];}) {
             notify.failure(result.message);
         }
 
-        loading.remove();
+        hideLoading()
     };
 
     // 가격 포맷팅 함수
@@ -245,10 +247,10 @@ export function ProductList({ products }: {products: Products[];}) {
                     </div>
 
                     <div className="flex gap-2 items-center">
-                        <Label htmlFor="show-active" className="font-medium">상태:</Label>
+                        <Label htmlFor="show-active" className="text-sm">상태:</Label>
                         <select
                             id="show-active"
-                            className="p-2 rounded border"
+                            className="p-2 rounded border text-sm"
                             value={showActive === null ? 'all' : showActive ? 'active' : 'inactive'}
                             onChange={(e) => {
                                 const value = e.target.value;

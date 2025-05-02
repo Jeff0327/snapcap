@@ -1,12 +1,5 @@
 'use client'
 import React, { useEffect, useState } from 'react';
-import { User } from "@supabase/supabase-js";
-import {
-    HoverCard,
-    HoverCardContent,
-    HoverCardTrigger,
-} from "@/components/ui/hover-card";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Image from "next/image";
 
 function Banner() {
@@ -15,16 +8,22 @@ function Banner() {
 
     const slides = [
         {
-            text: "첫 번째 슬라이드의 텍스트입니다.",
-            image: "/cap_02.jpg"
+            image: "/banner/banner_1.jpg",
+
         },
         {
-            text: "두 번째 슬라이드의 텍스트입니다.",
-            image: "/img_01.png"
+            image: "/banner/banner_2.jpg",
+
         },
         {
-            text: "세 번째 슬라이드의 텍스트입니다.",
-            image: "/img_01.png"
+            image: "/banner/banner_3.jpg",
+
+        },
+        {
+            image: "/banner/banner_4.jpg",
+        },
+        {
+            image: "/banner/banner_5.jpg",
         }
     ];
 
@@ -44,22 +43,45 @@ function Banner() {
         return () => clearInterval(timer); // 컴포넌트 언마운트 시 타이머 정리
     }, [slides.length]);
 
+    // Function to handle dot indicator clicks
+    const handleDotClick = (index:number) => {
+        setVisible(false);
+        setTimeout(() => {
+            setActiveSlide(index);
+            setVisible(true);
+        }, 500);
+    };
 
     return (
         <main>
-            <div className="w-full h-[40vh] lg:h-[80vh] flex flex-col items-center justify-center bg-green-100 relative">
-                {/* 슬라이드 내용 */}
-                <div className={`absolute inset-0 flex items-center justify-center transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+            <div className="w-full h-[40vh] lg:h-[80vh] flex flex-col items-center justify-center bg-white relative overflow-hidden">
+                {/* Background image with dark overlay */}
+                <div className={`absolute inset-0 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
                     <Image
                         src={slides[activeSlide].image}
                         alt={`Slide ${activeSlide + 1}`}
-                        className="object-cover w-full h-full"
-                        width={1000}
-                        height={1000}
+                        className="object-cover w-full h-full -translate-y-10"
+                        width={1920}
+                        height={1080}
+                        priority
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-30 flex items-center justify-center">
-                        <h2 className="text-4xl text-white font-bold">{slides[activeSlide].text}</h2>
-                    </div>
+                    <div className="absolute inset-0"></div>
+                </div>
+
+                {/* Bottom navigation dots */}
+                <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-30 w-full">
+                    {slides.map((_, index) => (
+                        <button
+                            key={index}
+                            onClick={() => handleDotClick(index)}
+                            className={`w-5 h-5 rounded-full transition-all duration-300 ${
+                                index === activeSlide
+                                    ? 'bg-gradient-to-r from-purple-300 to-blue-500 w-[50px]'
+                                    : 'bg-gradient-to-b from-purple-200 to-blue-200 hover:bg-gray-300'
+                            }`}
+                            aria-label={`Go to slide ${index + 1}`}
+                        />
+                    ))}
                 </div>
             </div>
         </main>

@@ -18,9 +18,9 @@ export const metadata = {
 };
 
 async function ProductListPage() {
-    const { success, data: products, error } = await getProductList();
+    const { data: products,error } = await getProductList();
 
-    if (!success) {
+    if (error) {
         return (
             <Card className="max-w-6xl mx-auto">
                 <CardHeader>

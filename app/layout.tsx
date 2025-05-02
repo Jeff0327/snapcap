@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./styles/globals.css";
+import {LoadingProvider} from "@/components/layout/LoadingProvider";
 
 
 
@@ -17,7 +18,9 @@ export default function RootLayout({
     <html lang="ko">
       <body
       >
+      <LoadingProvider>
         {children}
+      </LoadingProvider>
       </body>
     </html>
   );
