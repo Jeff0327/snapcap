@@ -68,6 +68,7 @@ function UserInfo({ user }: { user: User | null }) {
 
     return (
         <>
+            {/*비로그인과 로그인 유저를 구분지을 필요없음 page컴포넌트에서 user===null 이면 login페이지로 리다이렉트 처리*/}
             {user ? (
                 <div className="flex items-center space-x-3.5 relative">
                     {/* 검색 오버레이 */}
