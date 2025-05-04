@@ -1,9 +1,8 @@
 'use server';
 
 import { createClient } from "@/utils/server";
-import {FormState} from "@/components/ui/form";
-import {ERROR_CODES} from "@/utils/ErrorMessage";
-
+import { FormState } from "@/components/ui/form";
+import { ERROR_CODES } from "@/utils/ErrorMessage";
 
 export async function createProduct(formData: FormData): Promise<FormState> {
     const supabase = await createClient();
@@ -14,36 +13,64 @@ export async function createProduct(formData: FormData): Promise<FormState> {
         const sku = formData.get('sku') as string || null;
         const price = parseFloat(formData.get('price') as string);
         const salePrice = formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null;
-        const inventory = parseInt(formData.get('inventory') as string);
         const isActive = formData.get('is_active') === 'on';
         const description = formData.get('description') as string || '';
 
         // 이미지 배열 추출
         const images: string[] = [];
-        for (let i = 0; i < 10; i++) { // 최대 10개 이미지 지원
-            const img = formData.get(`images[${i}]`);
-            if (img) images.push(img as string);
+        for (const [key, value] of formData.entries()) {
+            if (key.startsWith('images[') && value) {
+                images.push(value as string);
+            }
         }
 
         // 태그 배열 추출
         const tags: string[] = [];
-        for (let i = 0; i < 20; i++) { // 최대 20개 태그 지원
-            const tag = formData.get(`tags[${i}]`);
-            if (tag) tags.push(tag as string);
-        }
-
-        // 색상 옵션 추출 (JSON으로 저장)
-        const colors: { name: string, code: string }[] = [];
-        for (let i = 0; i < 20; i++) {
-            const colorName = formData.get(`colors[${i}].name`);
-            const colorCode = formData.get(`colors[${i}].code`);
-            if (colorName && colorCode) {
-                colors.push({
-                    name: colorName as string,
-                    code: colorCode as string
-                });
+        for (const [key, value] of formData.entries()) {
+            if (key.startsWith('tags[') && value) {
+                tags.push(value as string);
             }
         }
+
+        // 변형(variants) 정보 추출 및 처리
+        const variants: { color: string; colorCode: string; inventory: number }[] = [];
+        const variantIndices = new Set<number>();
+
+        // 먼저 가능한 모든 변형 인덱스 수집
+        for (const [key, _] of formData.entries()) {
+            if (key.startsWith('variants[')) {
+                const match = key.match(/variants\[(\d+)\]/);
+                if (match && match[1]) {
+                    variantIndices.add(parseInt(match[1]));
+                }
+            }
+        }
+
+        // 각 변형 데이터 처리
+        variantIndices.forEach(index => {
+            const color = formData.get(`variants[${index}][color]`) as string;
+            const colorCode = formData.get(`variants[${index}][colorCode]`) as string;
+            const inventory = parseInt(formData.get(`variants[${index}][inventory]`) as string || '0');
+
+            if (color) {
+                variants.push({
+                    color,
+                    colorCode,
+                    inventory
+                });
+            }
+        });
+
+        // 색상 정보를 colors JSONB 필드에 맞게 변환
+        const colorsObj: Record<string, string> = {};
+        variants.forEach(v => {
+            if (v.color && v.colorCode) {
+                colorsObj[v.color] = v.colorCode;
+            }
+        });
+
+        // 총 재고 계산
+        const totalInventory = variants.reduce((sum, v) => sum + (v.inventory || 0), 0);
 
         // 상품 데이터 생성
         const productData = {
@@ -53,8 +80,8 @@ export async function createProduct(formData: FormData): Promise<FormState> {
             images,
             price,
             sale_price: salePrice,
-            colors: colors.length > 0 ? colors : null,
-            inventory,
+            colors: Object.keys(colorsObj).length > 0 ? colorsObj : null,
+            inventory: totalInventory, // 모든 색상의 재고 합계
             is_active: isActive,
             tags: tags.length > 0 ? tags : null
         };
@@ -74,14 +101,14 @@ export async function createProduct(formData: FormData): Promise<FormState> {
             };
         }
 
-        // 상품 바리에이션 처리 (색상 옵션에 따라)
-        if (colors.length > 0) {
+        // 각 색상별 재고 정보 저장
+        if (variants.length > 0) {
             const productId = data.id;
-            const variantData = colors.map(color => ({
+            const variantData = variants.map(variant => ({
                 product_id: productId,
-                color: color.name,
-                color_code: color.code,
-                inventory: Math.floor(inventory / colors.length), // 재고를 색상 수로 나눔
+                color: variant.color,
+                color_code: variant.colorCode,
+                inventory: variant.inventory, // 각 색상별 재고 저장
                 is_active: isActive
             }));
 
@@ -91,7 +118,10 @@ export async function createProduct(formData: FormData): Promise<FormState> {
 
             if (variantError) {
                 console.error('바리에이션 등록 오류:', variantError);
-                // 바리에이션 실패해도 상품은 등록되었으므로 성공으로 처리할 수 있음
+                return {
+                    code: ERROR_CODES.DB_ERROR,
+                    message: '색상별 재고 정보 저장 중 오류가 발생했습니다: ' + variantError.message
+                };
             }
         }
 
@@ -100,11 +130,10 @@ export async function createProduct(formData: FormData): Promise<FormState> {
             message: '상품이 성공적으로 등록되었습니다.'
         };
 
-    } catch (error: any) {
-        console.error('상품 등록 서버 오류:', error);
+    } catch (error) {
         return {
             code: ERROR_CODES.SERVER_ERROR,
-            message: '서버 오류가 발생했습니다: ' + error.message
+            message: '서버 오류가 발생했습니다: '
         };
     }
 }

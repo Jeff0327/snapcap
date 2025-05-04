@@ -14,7 +14,9 @@ import Editor from '@/lib/editor/Editor';
 import { ERROR_CODES } from '@/utils/ErrorMessage';
 import FormContainer, { FormState } from '@/components/ui/form';
 import { SubmitButton } from '@/components/ui/SubmitButton';
-import {editProduct} from "@/app/admin/products/edit/[id]/actions";
+import { editProduct } from "@/app/admin/products/edit/[id]/actions";
+import Image from "next/image";
+import {ColorOption, ColorVariant} from "@/types";
 
 const ProductEditForm = ({ product }: { product: any }) => {
     const { notify, loading } = useAlert();
@@ -23,7 +25,7 @@ const ProductEditForm = ({ product }: { product: any }) => {
     const [mainImage, setMainImage] = useState(product.images?.[0] || '');
     const [additionalImages, setAdditionalImages] = useState<string[]>(product.images?.slice(1) || []);
     const [tags, setTags] = useState<string[]>(product.tags || []);
-
+    const [totalInventory, setTotalInventory] = useState(product.inventory || 0);
 
     const allImages = [mainImage, ...additionalImages].filter(Boolean);
 
@@ -50,6 +52,14 @@ const ProductEditForm = ({ product }: { product: any }) => {
     const removeAdditionalImage = (index: number) =>
         setAdditionalImages(additionalImages.filter((_, i) => i !== index));
     const handleTagsChange = (newTags: string[]) => setTags(newTags);
+
+    // 색상별 재고 변경 시 총 재고 업데이트
+    const handleVariantsChange = (variants: ColorVariant[]): void => {
+        const total: number = variants.reduce((sum: number, v: ColorVariant) => sum + (parseInt(String(v.inventory)) || 0), 0);
+        setTotalInventory(total);
+    };
+
+    console.log('Variants from product:', product.variants);
 
     return (
         <FormContainer action={(formData)=>editProduct(product.id,formData)} onResult={handleResult}>
@@ -91,14 +101,18 @@ const ProductEditForm = ({ product }: { product: any }) => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <Label htmlFor="inventory">재고 수량 *</Label>
+                    <Label htmlFor="total_inventory">총 재고 수량</Label>
                     <Input
-                        id="inventory"
-                        name="inventory"
+                        id="total_inventory"
                         type="number"
-                        required
-                        defaultValue={product.inventory}
+                        value={totalInventory}
+                        readOnly
+                        className="bg-gray-50"
                     />
+                    <p className="text-sm text-gray-500 mt-1">
+                        총 재고는 아래 색상별 재고의 합계로 자동 계산됩니다.
+                    </p>
+                    <input type="hidden" name="inventory" value={totalInventory} />
                 </div>
 
                 <div className="flex items-center space-x-2 mt-8">
@@ -114,7 +128,7 @@ const ProductEditForm = ({ product }: { product: any }) => {
             <div className="mb-6">
                 <Label>메인 이미지 *</Label>
                 <ImageUploader onImageUploaded={onMainImageUploaded} label="메인 이미지 변경" />
-                {mainImage && <img src={mainImage} className="w-40 h-40 object-cover mt-2" />}
+                {mainImage && <Image alt={'mainImage'} src={mainImage} className="w-40 h-40 object-cover mt-2" width={400} height={400}/>}
             </div>
 
             <div className="mb-6">
@@ -141,8 +155,12 @@ const ProductEditForm = ({ product }: { product: any }) => {
             ))}
 
             <div className="mb-6">
-                <Label>색상 옵션</Label>
-                <ColorVariantInput defaultValue={product.colors ||''} />
+                <Label className={'my-2'}>색상별 재고 관리</Label>
+                <ColorVariantInput
+                    defaultValue={product.colors || {}}
+                    variants={product.variants || []}
+                    onChange={handleVariantsChange}
+                />
             </div>
 
             <div className="mb-6">

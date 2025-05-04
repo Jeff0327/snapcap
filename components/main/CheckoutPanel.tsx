@@ -1,10 +1,10 @@
 'use client';
 import React, { useState } from 'react';
-import { Products } from '@/types';
+import {ProductsJson} from '@/types';
 import { useRouter } from "next/navigation";
 
 interface CheckoutPanelProps {
-    product: Products;
+    product: ProductsJson;
 }
 
 export function CheckoutPanel({ product }: CheckoutPanelProps) {
@@ -54,17 +54,12 @@ export function CheckoutPanel({ product }: CheckoutPanelProps) {
             queryParams.append('size', selectedSize);
         }
 
-        router.push(`/order/checkout/${product.id}?${queryParams.toString()}`);
+        router.push(`/order/${product.id}?${queryParams.toString()}`);
     };
 
     // 색상 선택 처리
     const handleColorSelect = (color: string) => {
         setSelectedColor(color);
-    };
-
-    // 사이즈 선택 처리
-    const handleSizeSelect = (size: string) => {
-        setSelectedSize(size);
     };
 
     const isOutOfStock = product.inventory <= 0;

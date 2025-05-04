@@ -13,3 +13,8 @@ export interface ColorOption {
 export type ProductsJson = Products & {
     colors:ColorOption[]
 }
+export interface ColorVariant {
+    color: string;
+    colorCode: string;
+    inventory: number;
+}

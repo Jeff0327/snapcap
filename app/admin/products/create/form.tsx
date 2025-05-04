@@ -15,6 +15,7 @@ import Editor from "@/lib/editor/Editor";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import FormContainer, {FormState} from "@/components/ui/form";
 import {SubmitButton} from "@/components/ui/SubmitButton";
+import ColorVariantInput from "@/components/admin/products/ColorVariantInput";
 
 //ColorVariantInput ,TagInput params 수정!!
 const ProductCreateForm = () => {
@@ -169,7 +170,7 @@ const ProductCreateForm = () => {
 
             <div className="mb-6">
                 <Label className="block mb-2 font-semibold">색상 옵션</Label>
-                {/*<ColorVariantInput />*/}
+                <ColorVariantInput />
             </div>
 
             <div className="mb-6">

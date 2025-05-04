@@ -9,13 +9,15 @@ interface SubmitButtonProps {
     variant?: 'default' | 'outline' | 'destructive';
     size?: 'default' | 'sm' | 'lg';
     showIcon?: boolean;
+    className?:string;
 }
 
 export function SubmitButton({
                                  text,
                                  variant = 'default',
                                  size = 'lg',
-                                 showIcon = true
+                                 showIcon = true,
+    className,
                              }: SubmitButtonProps) {
     const { pending } = useFormStatus();
 
@@ -25,7 +27,7 @@ export function SubmitButton({
             variant={variant}
             size={size}
             disabled={pending}
-            className="min-w-[120px] flex items-center justify-center"
+            className={`min-w-[120px] flex items-center justify-center ${className}`}
         >
             {pending ? '처리 중...' : text}
             {showIcon && !pending && <ArrowRightIcon className="ml-2 h-4 w-4" />}
