@@ -16,7 +16,7 @@ import FormContainer, { FormState } from '@/components/ui/form';
 import { SubmitButton } from '@/components/ui/SubmitButton';
 import { editProduct } from "@/app/admin/products/edit/[id]/actions";
 import Image from "next/image";
-import {ColorOption, ColorVariant} from "@/types";
+import { ColorVariant} from "@/types";
 
 const ProductEditForm = ({ product }: { product: any }) => {
     const { notify, loading } = useAlert();
@@ -58,8 +58,6 @@ const ProductEditForm = ({ product }: { product: any }) => {
         const total: number = variants.reduce((sum: number, v: ColorVariant) => sum + (parseInt(String(v.inventory)) || 0), 0);
         setTotalInventory(total);
     };
-
-    console.log('Variants from product:', product.variants);
 
     return (
         <FormContainer action={(formData)=>editProduct(product.id,formData)} onResult={handleResult}>
@@ -112,32 +110,40 @@ const ProductEditForm = ({ product }: { product: any }) => {
                     <p className="text-sm text-gray-500 mt-1">
                         총 재고는 아래 색상별 재고의 합계로 자동 계산됩니다.
                     </p>
-                    <input type="hidden" name="inventory" value={totalInventory} />
+                    <input type="hidden" name="inventory" value={totalInventory}/>
                 </div>
 
+
                 <div className="flex items-center space-x-2 mt-8">
-                    <Switch
-                        id="is_active"
-                        name="is_active"
-                        defaultChecked={product.is_active}
-                    />
+                    <div className="relative">
+                        <Switch
+                            id="is_active"
+                            name="is_active"
+                            defaultChecked={product.is_active}
+                            className="peer h-6 w-11 rounded-full bg-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=checked]:bg-blue-600"
+                        />
+                        <span
+                            className="block absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-data-[state=checked]:translate-x-5"></span>
+                    </div>
                     <Label htmlFor="is_active">상품 활성화</Label>
                 </div>
             </div>
 
             <div className="mb-6">
                 <Label>메인 이미지 *</Label>
-                <ImageUploader onImageUploaded={onMainImageUploaded} label="메인 이미지 변경" />
-                {mainImage && <Image alt={'mainImage'} src={mainImage} className="w-40 h-40 object-cover mt-2" width={400} height={400}/>}
+                <ImageUploader onImageUploaded={onMainImageUploaded} label="메인 이미지 변경"/>
+                {mainImage &&
+                    <Image alt={'mainImage'} src={mainImage} className="w-40 h-40 object-cover mt-2" width={400}
+                           height={400}/>}
             </div>
 
             <div className="mb-6">
                 <Label>추가 이미지</Label>
-                <ImageUploader onImageUploaded={onAdditionalImageUploaded} label="추가 이미지 업로드" />
+                <ImageUploader onImageUploaded={onAdditionalImageUploaded} label="추가 이미지 업로드"/>
                 <div className="flex flex-wrap gap-2 mt-2">
                     {additionalImages.map((img, index) => (
                         <div key={index} className="relative inline-block">
-                            <img src={img} alt="" className="w-24 h-24 object-cover" />
+                            <img src={img} alt="" className="w-24 h-24 object-cover"/>
                             <button
                                 type="button"
                                 onClick={() => removeAdditionalImage(index)}

@@ -3,13 +3,22 @@ import {getOneProduct} from "@/app/(main)/products/[id]/actions";
 import {ProductDetail} from "@/components/main/ProductDetail";
 import {CheckoutPanel} from "@/components/main/CheckoutPanel";
 
-async function Page({params}: { params: Promise<{ id: string }> }) {
-    const {id} = await params
-    if (!id) return;
+async function Page({params}: { params: Promise<{ id: string; search?: string }> }) {
+    const {id, search} = await params;
+    if (!id) return null;
 
-    const {data} = await getOneProduct(id)
+    // search 파라미터를 getOneProduct에 전달
+    const {data} = await getOneProduct(id, search);
 
-    if(!data) return;
+    if(!data) {
+        return (
+            <div className="max-w-6xl mx-auto py-8 text-center">
+                <h2 className="text-2xl font-bold mb-4">상품을 찾을 수 없습니다</h2>
+                <p>검색한 상품이 존재하지 않거나 삭제되었습니다.</p>
+            </div>
+        );
+    }
+
     return (
         <div className="max-w-6xl mx-auto py-8">
             <div className="flex flex-col lg:flex-row gap-8">
@@ -24,10 +33,6 @@ async function Page({params}: { params: Promise<{ id: string }> }) {
                     <div className="lg:sticky top-12 lg:top-12 space-y-6">
                         <CheckoutPanel
                             product={data}
-                            // onAddToCart={() => {
-                            //     // 서버 컴포넌트에서는 직접 이벤트 처리 불가능
-                            //     // 클라이언트 컴포넌트에서 처리
-                            // }}
                         />
                     </div>
                 </div>

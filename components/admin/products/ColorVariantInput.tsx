@@ -1,70 +1,71 @@
 'use client';
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { X, Plus } from 'lucide-react';
-
-// 색상 변형 타입 정의
-interface ColorVariant {
-    color: string;
-    colorCode: string;
-    inventory: number;
-}
+import {ColorVariant} from "@/types";
 
 interface ColorVariantInputProps {
-    defaultValue?: any; // 다양한 형태로 들어올 수 있음 (객체, 배열 등)
-    variants?: any[]; // variant 정보 (색상별 재고 정보 포함)
+    defaultValue?: any;
+    variants?: any[];
     onChange?: (variants: ColorVariant[]) => void;
 }
 
 const ColorVariantInput = ({ defaultValue = {}, variants = [], onChange }: ColorVariantInputProps) => {
     const [colorVariants, setColorVariants] = useState<ColorVariant[]>([]);
+    const isInitialMount = useRef(true);
 
+    // 첫 번째 useEffect: 초기 데이터 로드 (한 번만 실행)
     useEffect(() => {
         // variants 데이터가 있으면 이를 우선 사용
         if (variants && variants.length > 0) {
-            // variant 데이터에서 필요한 정보만 추출
             const formattedVariants = variants.map(v => ({
                 color: v.color,
                 colorCode: v.color_code,
-                inventory: v.inventory || 0
+                inventory: v.inventory || ''
             }));
             setColorVariants(formattedVariants);
             return;
         }
 
-        // variants가 없는 경우 defaultValue(colors)에서 색상 정보만 추출
+        // variants가 없는 경우 defaultValue에서 색상 정보만 추출
         if (defaultValue && typeof defaultValue === 'object') {
             const initialVariants: ColorVariant[] = [];
 
-            // JSON 형식: { "Red": "#ff0000", "Blue": "#0000ff" }
             if (Object.keys(defaultValue).length > 0) {
                 Object.entries(defaultValue).forEach(([color, colorCode]) => {
                     initialVariants.push({
                         color,
                         colorCode: String(colorCode),
-                        inventory: 0 // 초기값
+                        inventory: ''
                     });
                 });
             }
 
-            setColorVariants(initialVariants.length > 0 ? initialVariants : [{ color: '', colorCode: '#000000', inventory: 0 }]);
+            setColorVariants(initialVariants.length > 0 ? initialVariants : [{ color: '', colorCode: '#000000', inventory: '' }]);
         } else {
             // 기본값이 없으면 빈 색상 하나로 시작
-            setColorVariants([{ color: '', colorCode: '#000000', inventory: 0 }]);
+            setColorVariants([{ color: '', colorCode: '#000000', inventory: '' }]);
         }
-    }, [defaultValue, variants]);
+    }, []); // 의존성 배열을 비워서 컴포넌트 마운트 시 한 번만 실행
 
-    // 상태 변경 시 onChange 콜백 호출
+    // 두 번째 useEffect: onChange 호출 (colorVariants가 변경될 때만)
     useEffect(() => {
+        // 초기 마운트 시에는 onChange를 호출하지 않음
+        if (isInitialMount.current) {
+            isInitialMount.current = false;
+            return;
+        }
+
+        // colorVariants가 변경됐을 때만 onChange 호출
         if (onChange && colorVariants.length > 0) {
             onChange(colorVariants);
         }
-    }, [colorVariants, onChange]);
+    }, [colorVariants]); // onChange는 의존성 배열에서 제거
 
     const addVariant = () => {
-        setColorVariants([...colorVariants, { color: '', colorCode: '#000000', inventory: 0 }]);
+        setColorVariants([...colorVariants, { color: '', colorCode: '#000000', inventory: '' }]);
     };
 
     const removeVariant = (index: number) => {
@@ -77,8 +78,11 @@ const ColorVariantInput = ({ defaultValue = {}, variants = [], onChange }: Color
         setColorVariants(newVariants);
     };
 
-    // 총 재고 계산
-    const totalInventory = colorVariants.reduce((sum, v) => sum + (typeof v.inventory === 'number' ? v.inventory : 0), 0);
+    // 총 재고 계산 (빈 문자열은 0으로 처리)
+    const totalInventory = colorVariants.reduce((sum, v) => {
+        const inventory = v.inventory === '' ? 0 : Number(v.inventory);
+        return sum + (isNaN(inventory) ? 0 : inventory);
+    }, 0);
 
     return (
         <div className="space-y-4">
@@ -145,10 +149,8 @@ const ColorVariantInput = ({ defaultValue = {}, variants = [], onChange }: Color
                             <Input
                                 id={`inventory-${index}`}
                                 type="number"
-                                min="0"
                                 value={variant.inventory}
-                                onChange={(e) => updateVariant(index, 'inventory', parseInt(e.target.value) || 0)}
-                                placeholder="0"
+                                onChange={(e) => updateVariant(index, 'inventory', e.target.value)}
                                 required
                             />
                             <input
@@ -176,11 +178,6 @@ const ColorVariantInput = ({ defaultValue = {}, variants = [], onChange }: Color
                 name="inventory"
                 value={totalInventory}
             />
-
-            {/* 디버깅용 정보 - 개발 완료 후 제거 */}
-            <div className="mt-4 px-3 py-2 bg-gray-100 rounded text-sm text-gray-700">
-                총 재고: {totalInventory}개 (모든 색상의 재고 합계)
-            </div>
         </div>
     );
 };

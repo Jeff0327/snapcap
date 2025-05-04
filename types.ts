@@ -16,5 +16,5 @@ export type ProductsJson = Products & {
 export interface ColorVariant {
     color: string;
     colorCode: string;
-    inventory: number;
+    inventory: number | string;
 }

@@ -1,20 +1,40 @@
-import React from 'react';
+'use client'
+import React, { useState, useEffect } from 'react';
 import Link from "next/link";
 import {User} from "@supabase/supabase-js";
 import UserInfo from "@/components/layout/UserInfo";
 
 function Header({user}:{user:User|null}) {
+    const [scrolled, setScrolled] = useState(false);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            const isScrolled = window.scrollY > 10;
+            if (isScrolled !== scrolled) {
+                setScrolled(isScrolled);
+            }
+        };
+
+        window.addEventListener('scroll', handleScroll);
+
+        return () => {
+            window.removeEventListener('scroll', handleScroll);
+        };
+    }, [scrolled]);
 
     return (
-        <header className="sticky top-0 z-10 bg-white border-b">
+        <header className={`fixed top-0 w-full z-10 ${
+            scrolled
+                ? 'border-b backdrop-blur-md bg-white/30'
+                : ''
+        }`}>
             <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-                <Link href="/" className="text-2xl font-Nanum">
+                <Link href="/" className={`text-2xl font-Nanum text-black`}>
                     스냅캡
                 </Link>
-                <nav className="hidden space-x-6 md:flex">
-
-                </nav>
-                <UserInfo user={user}/>
+                <div className={'text-black'}>
+                    <UserInfo user={user}/>
+                </div>
             </div>
         </header>
     );

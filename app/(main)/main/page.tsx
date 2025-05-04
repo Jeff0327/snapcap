@@ -8,15 +8,18 @@ async function Page() {
     const products = result.data || [];
 
     return (
-        <div>
-            <Banner/>
+        <>
+            {/* Banner가 먼저 렌더링되지만, Header가 absolute로 위에 올라옴 */}
+            <div className="relative">
+                <Banner/>
+            </div>
             <div className={'p-5 lg:p-12'}>
                 <ProductList
                     products={products}
                     title="BEST"
                 />
             </div>
-        </div>
+        </>
     );
 }
 

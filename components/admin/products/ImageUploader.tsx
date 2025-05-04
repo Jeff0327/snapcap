@@ -70,12 +70,11 @@ const ImageUploader = ({ onImageUploaded, label = "이미지 업로드" }: Image
             // 응답이 JSON이 아닐 경우를 대비
             if (!response.ok) {
                 const text = await response.text();
-                console.error("서버 응답 에러:", response.status, text);
+                notify.failure(`이미지 업로드 실패: ${response.status}`);
                 throw new Error(`서버 오류: ${response.status} ${text}`);
             }
 
             const result = await response.json();
-            console.log("업로드 응답:", result);
 
             setUploadProgress(100);
 
