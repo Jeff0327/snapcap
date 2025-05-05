@@ -18,6 +18,7 @@ import {SubmitButton} from "@/components/ui/SubmitButton";
 import ColorVariantInput from "@/components/admin/products/ColorVariantInput";
 import TagsInput from "@/components/admin/products/TagsInput";
 import {ColorVariant} from "@/types";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 //ColorVariantInput ,TagInput params 수정!!
 const ProductCreateForm = () => {
@@ -27,7 +28,7 @@ const ProductCreateForm = () => {
     const [additionalImages, setAdditionalImages] = useState<string[]>([]);
     const [tags, setTags] = useState<string[]>([]);
     const [totalInventory, setTotalInventory] = useState(0);
-
+    const [productType, setProductType] = useState('default');
     // 이미지 URL이 설정되면 hidden input에 값을 넣기 위한 모든 이미지 배열
     const allImages = [mainImage, ...additionalImages].filter(Boolean);
 
@@ -123,7 +124,7 @@ const ProductCreateForm = () => {
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                    <Label htmlFor="total_inventory">총 재고 수량</Label>
+                    <Label htmlFor="total_inventory" className={'mb-2'}>총 재고 수량</Label>
                     <Input
                         id="total_inventory"
                         type="number"
@@ -136,8 +137,26 @@ const ProductCreateForm = () => {
                     </p>
                     <input type="hidden" name="inventory" value={totalInventory}/>
                 </div>
-
-                <div className="flex items-center space-x-2 mt-8">
+                <div>
+                    <Label htmlFor="type" className={'mb-2'}>상품 타입</Label>
+                    <Select
+                        value={productType}
+                        onValueChange={(value) => setProductType(value)}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="타입 선택"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">기본</SelectItem>
+                            <SelectItem value="best">베스트</SelectItem>
+                            <SelectItem value="new">신상품</SelectItem>
+                            <SelectItem value="sale">할인</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {/* Hidden input for product type */}
+                    <input type="hidden" name="type" value={productType}/>
+                </div>
+                <div className="flex items-center space-x-2">
                     <div className="relative">
                         <Switch
                             id="is_active"

@@ -37,13 +37,16 @@ function Menu({user}: {user: User}) {
                             <div className="space-y-2">
                                 <h3 className="text-sm font-medium text-gray-500">쇼핑하기</h3>
                                 <div className="space-y-1">
-                                    <Link href="/products" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/products"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         전체 상품
                                     </Link>
-                                    <Link href="/products/new" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/products/new"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         신상품
                                     </Link>
-                                    <Link href="/products/best" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/products/best"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         인기 상품
                                     </Link>
                                 </div>
@@ -53,13 +56,16 @@ function Menu({user}: {user: User}) {
                             <div className="space-y-2">
                                 <h3 className="text-sm font-medium text-gray-500">계정</h3>
                                 <div className="space-y-1">
-                                    <Link href="/profile" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/profile"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         내 정보
                                     </Link>
-                                    <Link href="/shipping" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/shipping"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         주문 내역
                                     </Link>
-                                    <Link href="/cart" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/cart"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         장바구니
                                     </Link>
                                 </div>
@@ -69,10 +75,12 @@ function Menu({user}: {user: User}) {
                             <div className="space-y-2">
                                 <h3 className="text-sm font-medium text-gray-500">고객 서비스</h3>
                                 <div className="space-y-1">
-                                    <Link href="/contact" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/contact"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         고객 센터
                                     </Link>
-                                    <Link href="/faq" className="block py-2 px-3 text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <Link href="/faq"
+                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         자주 묻는 질문
                                     </Link>
                                 </div>
@@ -80,23 +88,19 @@ function Menu({user}: {user: User}) {
 
 
                         </nav>
-                    </div>
-
-                    {/* 하단 영역 */}
-                    <div className="p-6 border-t">
                         <div className="flex flex-col space-y-3">
                             {user.user_metadata.role === 'admin' && (
                                 <Link
                                     href="/admin"
-                                    className="flex items-center py-2 px-3 text-lg font-medium text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
+                                    className="flex items-center py-2 px-3 text-sm lg:text-lg font-medium text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                                 >
-                                    <MdAdminPanelSettings className="w-5 h-5 mr-2" />
+                                    <MdAdminPanelSettings className="w-5 h-5 mr-2"/>
                                     관리자 페이지
                                 </Link>
                             )}
                             <button
                                 onClick={signOut}
-                                className="py-2 px-3 text-lg font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-colors"
+                                className="py-2 px-3 text-sm lg:text-lg font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-colors"
                             >
                                 로그아웃
                             </button>

@@ -17,6 +17,7 @@ import { SubmitButton } from '@/components/ui/SubmitButton';
 import { editProduct } from "@/app/admin/products/edit/[id]/actions";
 import Image from "next/image";
 import { ColorVariant} from "@/types";
+import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
 
 const ProductEditForm = ({ product }: { product: any }) => {
     const { notify, loading } = useAlert();
@@ -26,7 +27,7 @@ const ProductEditForm = ({ product }: { product: any }) => {
     const [additionalImages, setAdditionalImages] = useState<string[]>(product.images?.slice(1) || []);
     const [tags, setTags] = useState<string[]>(product.tags || []);
     const [totalInventory, setTotalInventory] = useState(product.inventory || 0);
-
+    const [productType, setProductType] = useState(product.type || 'default');
     const allImages = [mainImage, ...additionalImages].filter(Boolean);
 
     const handleResult = async (formState: FormState) => {
@@ -112,7 +113,25 @@ const ProductEditForm = ({ product }: { product: any }) => {
                     </p>
                     <input type="hidden" name="inventory" value={totalInventory}/>
                 </div>
-
+                <div>
+                    <Label htmlFor="type">상품 타입</Label>
+                    <Select
+                        value={productType}
+                        onValueChange={(value) => setProductType(value)}
+                    >
+                        <SelectTrigger className="w-full">
+                            <SelectValue placeholder="타입 선택"/>
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="default">기본</SelectItem>
+                            <SelectItem value="best">베스트</SelectItem>
+                            <SelectItem value="new">신상품</SelectItem>
+                            <SelectItem value="sale">할인</SelectItem>
+                        </SelectContent>
+                    </Select>
+                    {/* Hidden input for product type */}
+                    <input type="hidden" name="type" value={productType}/>
+                </div>
 
                 <div className="flex items-center space-x-2 mt-8">
                     <div className="relative">

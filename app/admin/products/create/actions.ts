@@ -15,7 +15,7 @@ export async function createProduct(formData: FormData): Promise<FormState> {
         const salePrice = formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null;
         const isActive = formData.get('is_active') === 'on';
         const description = formData.get('description') as string || '';
-
+        const type =formData.get('type') as string;
         // 이미지 배열 추출
         const images: string[] = [];
         for (const [key, value] of formData.entries()) {
@@ -83,7 +83,8 @@ export async function createProduct(formData: FormData): Promise<FormState> {
             colors: Object.keys(colorsObj).length > 0 ? colorsObj : null,
             inventory: totalInventory, // 모든 색상의 재고 합계
             is_active: isActive,
-            tags: tags.length > 0 ? tags : null
+            tags: tags.length > 0 ? tags : null,
+            type
         };
 
         // Supabase에 상품 추가

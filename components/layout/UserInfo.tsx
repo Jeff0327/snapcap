@@ -21,19 +21,12 @@ import {IoSearchOutline} from "react-icons/io5";
 import {PiUserLight} from "react-icons/pi";
 import {FaRegUserCircle} from "react-icons/fa";
 import FormContainer, {FormState} from "@/components/ui/form";
-import {searchProduct} from "@/app/(main)/main/actions";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import {useRouter} from "next/navigation";
 import useAlert from "@/lib/notiflix/useAlert";
-import {
-    Sheet,
-    SheetContent,
-    SheetDescription,
-    SheetHeader,
-    SheetTitle,
-    SheetTrigger,
-} from "@/components/ui/sheet"
+
 import Menu from "@/components/layout/menuTab/Menu";
+import {searchProduct} from "@/app/(main)/products/actions";
 
 function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCount?: number }) {
     const [searchOpen, setSearchOpen] = useState(false);
