@@ -95,7 +95,7 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                 priority
                                 className="object-contain"
                                 sizes="(max-width: 1280px) 100vw, 60vw"
-                                quality={90}
+                                quality={100}
                             />
                         ) : (
                             <div className="flex items-center justify-center h-full">
@@ -131,7 +131,7 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                 </div>
 
                 {/* 상품 정보 섹션 */}
-                <div className="w-full xl:w-2/5 space-y-8">
+                <div className="w-full xl:w-2/5 space-y-8 px-4 lg:px-0">
                     <div>
                         {product.tags && product.tags.length > 0 && (
                             <div className="flex flex-wrap gap-1 mb-2">
@@ -274,7 +274,7 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
             </div>
 
             {/* 상품 설명 - 별도 섹션으로 분리 */}
-            <div className="mt-8 border-t border-gray-100 pt-8">
+            <div className="mt-8 border-t border-gray-100 pt-8 px-4 lg:px-0">
                 <h3 className="text-xl font-bold mb-4">상품 설명</h3>
                 <div
                     className="prose prose-sm max-w-none text-gray-600"

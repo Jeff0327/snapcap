@@ -20,8 +20,8 @@ async function Page({params}: { params: Promise<{ id: string; search?: string }>
     }
 
     return (
-        <div className="max-w-6xl mx-auto py-8">
-            <div className="flex flex-col lg:flex-row gap-8">
+        <div className="w-full mx-auto py-8 max-w-7xl">
+            <div className="flex flex-col lg:flex-row gap-12">
                 {/* 메인 상품 정보 - 왼쪽 2/3 영역 */}
                 <div className="w-full lg:w-2/3">
                     <ProductDetail product={data}/>

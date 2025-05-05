@@ -22,7 +22,7 @@ async function ProductListPage() {
 
     if (error) {
         return (
-            <Card className="max-w-6xl mx-auto">
+            <Card className="mx-auto">
                 <CardHeader>
                     <CardTitle>상품 목록</CardTitle>
                 </CardHeader>
@@ -37,17 +37,7 @@ async function ProductListPage() {
     }
 
     return (
-        <div className="container py-6 max-w-6xl mx-auto">
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-2xl font-bold">상품 관리</h1>
-                <Button asChild>
-                    <Link href="/admin/products/create">
-                        <PlusIcon className="mr-2 h-4 w-4" />
-                        상품 등록
-                    </Link>
-                </Button>
-            </div>
-
+        <div className="mx-auto">
             <ProductList products={products || []} />
         </div>
     );

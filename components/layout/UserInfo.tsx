@@ -102,15 +102,15 @@ function UserInfo({ user }: { user: User | null }) {
                     <Popover>
                         <PopoverTrigger asChild>
                             <Avatar className={`cursor-pointer w-6 h-6 ${searchOpen && '-z-10'}`}>
-                                {user.user_metadata?.avatar_url ? (
+                                {user.user_metadata?.avatar_url && (
                                     <AvatarImage
                                         src={user.user_metadata.avatar_url}
                                         alt={user.email || "사용자"}
                                     />
-                                ) : null}
+                                )}
                                 <AvatarFallback>
                                     <div className={'flex justify-center items-center w-7 h-7 rounded-full bg-white'}>
-                                        <h2 className={'text-lg text-black'}>
+                                        <h2 className={'text-lg text-black  '}>
                                             {getUserInitials()}
                                         </h2>
                                     </div>
@@ -120,12 +120,12 @@ function UserInfo({ user }: { user: User | null }) {
                         <PopoverContent className="w-60 backdrop-blur">
                             <div className="flex flex-col items-center space-y-2 p-2">
                                 <Avatar className="h-10 w-10 mb-2">
-                                    {user.user_metadata?.avatar_url ? (
+                                    {user.user_metadata?.avatar_url && (
                                         <AvatarImage
                                             src={user.user_metadata.avatar_url}
                                             alt={user.email || "사용자"}
                                         />
-                                    ) : null}
+                                    ) }
                                     <AvatarFallback className="text-lg rounded-full bg-white">
                                         {getUserInitials()}
                                     </AvatarFallback>

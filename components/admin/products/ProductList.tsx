@@ -28,7 +28,7 @@ import {
     Trash2,
     Eye,
     Search,
-    ArrowUpDown
+    ArrowUpDown, PlusIcon
 } from "lucide-react";
 import Link from "next/link";
 import { deleteProduct, toggleProductStatus } from "@/app/admin/products/actions";
@@ -222,13 +222,19 @@ export function ProductList({ products }: {products: Products[];}) {
     };
 
     return (
-        <Card className="w-full">
+        <Card className="w-full min-h-[90vh]">
             <CardHeader>
                 <CardTitle className="text-xl font-bold flex justify-between items-center">
                     <span>상품 관리</span>
                     <span className="text-sm text-muted-foreground">
                         총 {products.length}개 상품 중 {filteredProducts.length}개 표시
                     </span>
+                    <Button asChild>
+                        <Link href="/admin/products/create">
+                            <PlusIcon className="mr-2 h-4 w-4" />
+                            상품 등록
+                        </Link>
+                    </Button>
                 </CardTitle>
                 <CardDescription>
                     상품을 관리하고 재고, 가격, 상태를 업데이트하세요.
