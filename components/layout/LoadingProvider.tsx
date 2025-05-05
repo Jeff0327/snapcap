@@ -2,8 +2,9 @@
 import React, { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import Loading from "@/components/layout/Loading";
 
-
 interface LoadingContextType {
+    isLoading: boolean;
+    images: string[]; // 이미지 배열 타입 추가 (undefined가 아닌 string[])
     showLoading: () => void;
     hideLoading: () => void;
     setLoadingImages: (images: string[]) => void;
@@ -24,12 +25,19 @@ interface LoadingProviderProps {
     defaultImages?: string[];
 }
 
+// 기본 이미지 배열 정의
+const DEFAULT_IMAGES = [
+    '/loading/cap_01.png',
+    '/loading/cap_02.jpg',
+    '/loading/cap_03.jpg',
+];
+
 export const LoadingProvider: React.FC<LoadingProviderProps> = ({
                                                                     children,
-                                                                    defaultImages
+                                                                    defaultImages = DEFAULT_IMAGES // 기본값 설정
                                                                 }) => {
     const [isLoading, setIsLoading] = useState(false);
-    const [images, setImages] = useState<string[] | undefined>(defaultImages);
+    const [images, setImages] = useState<string[]>(defaultImages); // undefined가 아닌 string[] 타입으로
 
     const showLoading = useCallback(() => {
         setIsLoading(true);
@@ -44,6 +52,8 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     }, []);
 
     const value = {
+        isLoading,
+        images, // 이미지 배열 전달
         showLoading,
         hideLoading,
         setLoadingImages
@@ -52,7 +62,7 @@ export const LoadingProvider: React.FC<LoadingProviderProps> = ({
     return (
         <LoadingContext.Provider value={value}>
             {children}
-            <Loading isLoading={isLoading} images={images} />
+            <Loading />
         </LoadingContext.Provider>
     );
 };

@@ -1,11 +1,11 @@
 'use client'
-import React, { useRef, useState } from 'react';
-import { User } from "@supabase/supabase-js";
-import { Button } from "@/components/ui/button";
-import { MdAdminPanelSettings } from "react-icons/md";
-import { ShoppingBag, X } from "lucide-react";
+import React, {useRef, useState} from 'react';
+import {User} from "@supabase/supabase-js";
+import {Button} from "@/components/ui/button";
+import {MdAdminPanelSettings} from "react-icons/md";
+import {ShoppingBag, X} from "lucide-react";
 import Link from "next/link";
-import { CgMenuRightAlt } from "react-icons/cg";
+import {CgMenuRightAlt} from "react-icons/cg";
 import {
     Popover,
     PopoverContent,
@@ -16,21 +16,30 @@ import {
     AvatarImage,
     AvatarFallback
 } from "@/components/ui/avatar";
-import { signOut } from "@/app/(main)/login/actions";
-import { IoSearchOutline } from "react-icons/io5";
-import { PiUserLight } from "react-icons/pi";
-import { FaRegUserCircle } from "react-icons/fa";
+import {signOut} from "@/app/(main)/login/actions";
+import {IoSearchOutline} from "react-icons/io5";
+import {PiUserLight} from "react-icons/pi";
+import {FaRegUserCircle} from "react-icons/fa";
 import FormContainer, {FormState} from "@/components/ui/form";
 import {searchProduct} from "@/app/(main)/main/actions";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import {useRouter} from "next/navigation";
 import useAlert from "@/lib/notiflix/useAlert";
+import {
+    Sheet,
+    SheetContent,
+    SheetDescription,
+    SheetHeader,
+    SheetTitle,
+    SheetTrigger,
+} from "@/components/ui/sheet"
+import Menu from "@/components/layout/menuTab/Menu";
 
-function UserInfo({ user }: { user: User | null }) {
+function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCount?: number }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter()
-    const {notify} =useAlert()
+    const {notify} = useAlert()
     // 사용자 이니셜 생성 함수
     const getUserInitials = () => {
         if (!user || !user.email) return <FaRegUserCircle className={'w-6 h-6'}/>;
@@ -56,11 +65,11 @@ function UserInfo({ user }: { user: User | null }) {
     };
 
     // 검색 결과 처리 핸들러
-    const handleSearchResult = (formState:FormState) => {
-        if(formState.code===ERROR_CODES.SUCCESS){
+    const handleSearchResult = (formState: FormState) => {
+        if (formState.code === ERROR_CODES.SUCCESS) {
             router.push(`${formState.redirect}`)
-        }else{
-                notify.info(`${formState.message}`)
+        } else {
+            notify.info(`${formState.message}`)
         }
         // 검색 완료 후 검색창 닫기
         setSearchOpen(false);
@@ -93,7 +102,7 @@ function UserInfo({ user }: { user: User | null }) {
                                     required
                                 />
                                 <button type="button" onClick={handleCloseSearch}>
-                                    <X className="h-4 w-4 text-gray-500" />
+                                    <X className="h-4 w-4 text-gray-500"/>
                                 </button>
                             </div>
                         </FormContainer>
@@ -125,7 +134,7 @@ function UserInfo({ user }: { user: User | null }) {
                                             src={user.user_metadata.avatar_url}
                                             alt={user.email || "사용자"}
                                         />
-                                    ) }
+                                    )}
                                     <AvatarFallback className="text-lg rounded-full bg-white">
                                         {getUserInitials()}
                                     </AvatarFallback>
@@ -156,15 +165,18 @@ function UserInfo({ user }: { user: User | null }) {
                         <span className="sr-only">검색</span>
                     </button>
 
-                    <Link href="/shipping">
+                    <Link href="/cart" className={`relative ${searchOpen && 'hidden'}`}>
                         <ShoppingBag className="w-5 h-5"/>
+                        {cartItemsCount > 0 && (
+                            <span
+                                className={`absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center`}>
+                {cartItemsCount > 99 ? '99+' : cartItemsCount}
+              </span>
+                        )}
                         <span className="sr-only">장바구니</span>
                     </Link>
 
-                    <Link href="/menu">
-                        <CgMenuRightAlt className="w-6 h-6"/>
-                        <span className="sr-only">메뉴</span>
-                    </Link>
+                    <Menu user={user}/>
 
                     {user.user_metadata.role === 'admin' && (
                         <Link href="/admin">
@@ -196,7 +208,7 @@ function UserInfo({ user }: { user: User | null }) {
                                     required
                                 />
                                 <button type="button" onClick={handleCloseSearch}>
-                                    <X className="h-4 w-4 text-gray-500" />
+                                    <X className="h-4 w-4 text-gray-500"/>
                                 </button>
                             </div>
                         </FormContainer>

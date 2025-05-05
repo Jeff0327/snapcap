@@ -4,7 +4,11 @@ import Link from "next/link";
 import {User} from "@supabase/supabase-js";
 import UserInfo from "@/components/layout/UserInfo";
 
-function Header({user}:{user:User|null}) {
+interface HeaderProps {
+    user: User | null;
+    cartItemsCount?: number; // 장바구니 아이템 개수 추가
+}
+function Header({ user, cartItemsCount = 0 }: HeaderProps) {
     const [scrolled, setScrolled] = useState(false);
 
     useEffect(() => {
@@ -33,7 +37,7 @@ function Header({user}:{user:User|null}) {
                     스냅캡
                 </Link>
                 <div className={'text-black'}>
-                    <UserInfo user={user}/>
+                    <UserInfo user={user} cartItemsCount={cartItemsCount} />
                 </div>
             </div>
         </header>

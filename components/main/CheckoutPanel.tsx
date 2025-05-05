@@ -1,17 +1,24 @@
 'use client';
 import React, { useState } from 'react';
-import {ProductsJson} from '@/types';
+import { ProductsJson } from '@/types';
 import { useRouter } from "next/navigation";
+import { User } from "@supabase/supabase-js";
+import { ERROR_CODES } from "@/utils/ErrorMessage";
+import useAlert from "@/lib/notiflix/useAlert";
+import {addToCart} from "@/app/(main)/products/[id]/actions";
+import {useLoading} from "@/components/layout/LoadingProvider";
 
 interface CheckoutPanelProps {
     product: ProductsJson;
+    user: User | null
 }
 
-export function CheckoutPanel({ product }: CheckoutPanelProps) {
+export function CheckoutPanel({ product, user }: CheckoutPanelProps) {
     const [quantity, setQuantity] = useState(1);
-    const [selectedColor, setSelectedColor] = useState<string | null>(null);
-    const [selectedSize, setSelectedSize] = useState<string | null>(null);
+    const [selectedVariant, setSelectedVariant] = useState<any | null>(null);
     const router = useRouter();
+    const { notify } = useAlert();
+    const {showLoading, hideLoading,isLoading} = useLoading();
 
     // 가격 포맷팅 함수
     const formatPrice = (price: number | null) => {
@@ -36,60 +43,98 @@ export function CheckoutPanel({ product }: CheckoutPanelProps) {
     };
 
     const increaseQuantity = () => {
-        if (quantity < (product.inventory || 0)) {
+        // 선택된 variant가 있으면 해당 variant의 재고를 확인, 없으면 상품의 전체 재고 확인
+        const maxInventory = selectedVariant
+            ? selectedVariant.inventory
+            : (product.inventory || 0);
+
+        if (quantity < maxInventory) {
             setQuantity(quantity + 1);
         }
     };
 
     const handleOrder = () => {
+        if (!user) return router.push('/login');
+
         // URL에 제품 ID, 수량, 색상 정보를 포함하여 주문 페이지로 이동
         const queryParams = new URLSearchParams();
         queryParams.append('quantity', quantity.toString());
 
-        if (selectedColor) {
-            queryParams.append('color', selectedColor);
-        }
-
-        if (selectedSize) {
-            queryParams.append('size', selectedSize);
+        if (selectedVariant) {
+            queryParams.append('variantId', selectedVariant.id);
+            queryParams.append('color', selectedVariant.color);
+            queryParams.append('colorCode', selectedVariant.color_code);
         }
 
         router.push(`/order/${product.id}?${queryParams.toString()}`);
     };
 
-    // 색상 선택 처리
-    const handleColorSelect = (color: string) => {
-        setSelectedColor(color);
+    // variant 선택 처리
+    const handleVariantSelect = (variant: any) => {
+        setSelectedVariant(variant);
     };
 
-    const isOutOfStock = product.inventory <= 0;
-    const isOptionSelected = !product.colors || selectedColor !== null;
-    const canOrder = !isOutOfStock && isOptionSelected;
+    // 재고 확인 및 주문 가능 상태 계산
+    const hasVariants = product.variants !== undefined &&
+        Array.isArray(product.variants) &&
+        product.variants.length > 0;
+    const isOutOfStock = product.variants && Array.isArray(product.variants) && product.variants.length > 0
+        ? !product.variants.some(v => v.inventory > 0 && v.is_active)
+        : product.inventory <= 0;
+    const isVariantSelected = !hasVariants || selectedVariant !== null;
+    const canOrder = !isOutOfStock && isVariantSelected;
+
+    const handleAddToCart = async () => {
+        if (!user) return router.push('/login');
+
+        showLoading();
+        try {
+            const formState = await addToCart({
+                productId: product.id,
+                quantity: quantity,
+                variantId: selectedVariant?.id,
+                colorName: selectedVariant?.color,
+                colorCode: selectedVariant?.color_code,
+                userId: user.id
+            });
+
+            if (formState.code === ERROR_CODES.SUCCESS) {
+                notify.success(formState.message);
+            } else {
+                notify.failure(formState.message);
+            }
+        } catch (error) {
+            notify.failure('장바구니 추가 중 오류가 발생했습니다.');
+        } finally {
+            hideLoading();
+        }
+    };
 
     return (
         <div className="bg-white rounded-lg shadow-md p-6 w-full">
             <h3 className="text-lg font-bold border-b pb-3 mb-4">주문 정보</h3>
 
-            {/* 색상 선택 옵션 */}
-            {product.colors && (
+            {/* 색상(variant) 선택 옵션 */}
+            {hasVariants && (
                 <div className="mb-4">
                     <label className="font-medium block mb-2">색상</label>
                     <div className="flex flex-wrap gap-2">
-                        {Object.entries(product.colors).map(([color, colorCode]) => (
+                        {product.variants &&product.variants.map((variant) => (
                             <button
-                                key={color}
-                                onClick={() => handleColorSelect(color)}
+                                key={variant.id}
+                                onClick={() => handleVariantSelect(variant)}
+                                disabled={!variant.is_active || variant.inventory <= 0}
                                 className={`w-8 h-8 rounded-full border-2 ${
-                                    selectedColor === color
+                                    selectedVariant?.id === variant.id
                                         ? 'border-black'
                                         : 'border-gray-200'
-                                }`}
-                                style={{ backgroundColor: colorCode as string }}
-                                title={color}
+                                } ${(!variant.is_active || variant.inventory <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                style={{ backgroundColor: variant.color_code }}
+                                title={`${variant.color}${!variant.is_active || variant.inventory <= 0 ? ' (품절)' : ''}`}
                             />
                         ))}
                     </div>
-                    {product.colors && !selectedColor && (
+                    {hasVariants && !selectedVariant && (
                         <p className="text-red-500 text-sm mt-1">색상을 선택해 주세요</p>
                     )}
                 </div>
@@ -109,11 +154,15 @@ export function CheckoutPanel({ product }: CheckoutPanelProps) {
                     <input
                         type="number"
                         min="1"
-                        max={product.inventory || 1}
+                        max={selectedVariant ? selectedVariant.inventory : (product.inventory || 1)}
                         value={quantity}
                         onChange={(e) => {
                             const value = parseInt(e.target.value);
-                            if (!isNaN(value) && value >= 1 && value <= (product.inventory || 1)) {
+                            const maxInventory = selectedVariant
+                                ? selectedVariant.inventory
+                                : (product.inventory || 1);
+
+                            if (!isNaN(value) && value >= 1 && value <= maxInventory) {
                                 setQuantity(value);
                             }
                         }}
@@ -122,7 +171,10 @@ export function CheckoutPanel({ product }: CheckoutPanelProps) {
                     />
                     <button
                         onClick={increaseQuantity}
-                        disabled={quantity >= (product.inventory || 0) || isOutOfStock}
+                        disabled={
+                            quantity >= (selectedVariant ? selectedVariant.inventory : (product.inventory || 0)) ||
+                            isOutOfStock
+                        }
                         className="px-3 py-1 border rounded-r-md bg-gray-50 disabled:opacity-50"
                     >
                         +
@@ -165,11 +217,11 @@ export function CheckoutPanel({ product }: CheckoutPanelProps) {
                     {isOutOfStock ? '품절' : '바로 구매하기'}
                 </button>
                 <button
-                    // onClick={onAddToCart}
+                    onClick={handleAddToCart}
                     className="w-full py-3 border border-black rounded-md hover:bg-gray-50 disabled:border-gray-300 disabled:text-gray-300 disabled:cursor-not-allowed"
-                    disabled={!canOrder}
+                    disabled={!canOrder || isLoading}
                 >
-                    장바구니에 추가
+                    {isLoading ? '처리 중...' : '장바구니에 추가'}
                 </button>
             </div>
         </div>

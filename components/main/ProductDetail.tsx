@@ -11,7 +11,6 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
 
     // searchParams에서 값 가져오기
     const selectedImageParam = searchParams.get('image');
-    const selectedColorParam = searchParams.get('color');
     const isColorOption = (item: unknown): item is ColorOption => {
         return (
             typeof item === 'object' &&
@@ -41,12 +40,6 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
             }));
     }, [product.colors]);
 
-    // 선택된 색상 확인
-    const selectedColor = selectedColorParam &&
-    colors.some(c => c.code === selectedColorParam)
-        ? selectedColorParam
-        : null;
-
     const discountRate = getDiscountRate(product);
 
     // URL 파라미터 업데이트 함수
@@ -69,16 +62,6 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
     // 이미지 선택 처리
     const handleImageSelect = (image: string) => {
         updateParams('image', image);
-    };
-
-    // 색상 선택 처리
-    const handleColorSelect = (code: string) => {
-        // 현재 선택된 색상 코드와 같으면 선택 해제
-        if (code === selectedColor) {
-            updateParams('color', null);
-        } else {
-            updateParams('color', code);
-        }
     };
 
     return (

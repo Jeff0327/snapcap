@@ -1,76 +1,43 @@
 'use client';
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { createPortal } from 'react-dom';
+import { useLoading } from '@/components/layout/LoadingProvider';
 
-interface LoadingProps {
-    isLoading: boolean;
-    images?: string[]; // 사용자 정의 이미지 배열(선택 사항)
-}
-
-const LoadingComponent: React.FC<LoadingProps> = ({ isLoading, images }) => {
+const Loading: React.FC = () => {
+    const { isLoading, images } = useLoading(); // 컨텍스트에서 images 사용
     const [currentImageIndex, setCurrentImageIndex] = useState(0);
     const [mounted, setMounted] = useState(false);
 
-    // 기본 이미지 또는 사용자 정의 이미지 사용
-    const loadingImages = useMemo(() => {
-        return images || [
-            '/loading/cap_01.png',
-            '/loading/cap_02.jpg',
-            '/loading/cap_03.jpg',
-        ];
-    }, [images]);
-
-    // 이미지 사전 로딩 함수
+    // 컴포넌트 마운트 여부 확인
     useEffect(() => {
-        // 성능 최적화: 브라우저 환경에서만 실행
-        if (typeof window === 'undefined') return;
-
-        // 이미지 사전 로딩
-        const preloadImages = () => {
-            loadingImages.forEach((src) => {
-                // HTMLImageElement를 사용하여 타입스크립트 호환성 문제 해결
-                const imgElement = document.createElement('img');
-                imgElement.src = src;
-            });
-        };
-
-        preloadImages();
         setMounted(true);
-
-        return () => {
-            // 클린업 함수
-            setMounted(false);
-        };
-    }, [loadingImages]);
+        return () => setMounted(false);
+    }, []);
 
     // 이미지 순환 타이머
     useEffect(() => {
-        // 성능 최적화: isLoading이 false면 타이머 설정 안 함
-        if (!isLoading || !mounted) return;
+        if (!isLoading || !mounted || images.length <= 1) return;
 
         const interval = setInterval(() => {
-            setCurrentImageIndex((prevIndex) =>
-                prevIndex === loadingImages.length - 1 ? 0 : prevIndex + 1
+            setCurrentImageIndex((prev) =>
+                prev === images.length - 1 ? 0 : prev + 1
             );
-        }, 500); // 0.5초마다 이미지 변경
+        }, 500);
 
-        return () => {
-            clearInterval(interval);
-        };
-    }, [isLoading, loadingImages.length, mounted]);
+        return () => clearInterval(interval);
+    }, [isLoading, images.length, mounted]);
 
-    // 성능 최적화: isLoading이 false면 아무것도 렌더링하지 않음
+    // 로딩 중이 아니거나 마운트되지 않은 경우 렌더링하지 않음
     if (!isLoading || !mounted) return null;
 
-    // 포털 사용하여 DOM의 최상위에 로딩 컴포넌트 렌더링
+    // 포털을 사용하여 DOM의 최상위에 렌더링
     return createPortal(
         <div className="fixed inset-0 flex items-center justify-center z-50 bg-black/50 backdrop-blur-sm">
             <div className="flex flex-col items-center p-6">
                 <div className="relative w-24 h-24 md:w-32 md:h-32">
-                    {/* 성능 최적화: 현재 이미지만 렌더링 */}
                     <Image
-                        src={loadingImages[currentImageIndex]}
+                        src={images[currentImageIndex]}
                         alt="로딩 중"
                         fill
                         priority
@@ -86,4 +53,4 @@ const LoadingComponent: React.FC<LoadingProps> = ({ isLoading, images }) => {
     );
 };
 
-export default LoadingComponent;
+export default Loading;
