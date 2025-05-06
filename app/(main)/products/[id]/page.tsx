@@ -15,7 +15,7 @@ async function Page({params}: { params: Promise<{ id: string; search?: string }>
     const {data:{user}}=await supabase.auth.getUser()
     if(!data) {
         return (
-            <div className="max-w-6xl mx-auto py-8 text-center">
+            <div className="max-w-5xl mx-auto py-8 text-center">
                 <h2 className="text-2xl font-bold mb-4">상품을 찾을 수 없습니다</h2>
                 <p>검색한 상품이 존재하지 않거나 삭제되었습니다.</p>
             </div>
@@ -23,8 +23,8 @@ async function Page({params}: { params: Promise<{ id: string; search?: string }>
     }
 
     return (
-        <div className="w-full mx-auto py-8 max-w-7xl">
-            <div className="flex flex-col lg:flex-row gap-12">
+        <div className="w-full mx-auto py-8 max-w-7xl lg:px-2">
+            <div className="flex flex-col lg:flex-row gap-12 w-full lg:max-w-5xl mx-auto">
                 {/* 메인 상품 정보 - 왼쪽 2/3 영역 */}
                     <div className="w-full lg:w-2/3">
                         <ProductDetail product={data}/>

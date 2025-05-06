@@ -5,7 +5,6 @@ import {Button} from "@/components/ui/button";
 import {MdAdminPanelSettings} from "react-icons/md";
 import {ShoppingBag, X} from "lucide-react";
 import Link from "next/link";
-import {CgMenuRightAlt} from "react-icons/cg";
 import {
     Popover,
     PopoverContent,
@@ -28,7 +27,7 @@ import useAlert from "@/lib/notiflix/useAlert";
 import Menu from "@/components/layout/menuTab/Menu";
 import {searchProduct} from "@/app/(main)/products/actions";
 
-function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCount?: number }) {
+function RightMenu({user, cartItemsCount = 0}: { user: User | null, cartItemsCount?: number }) {
     const [searchOpen, setSearchOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter()
@@ -75,7 +74,7 @@ function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCoun
                 <div className="flex items-center space-x-3.5 relative">
                     {/* 검색 오버레이 */}
                     <div
-                        className={`absolute right-0 flex items-center transition-all duration-300 ease-in-out bg-white/90 backdrop-blur-sm rounded-full border ${
+                        className={`absolute right-0 flex items-center transition-all duration-300 ease-in-out bg-white/90 backdrop-blur-lg rounded-full border ${
                             searchOpen
                                 ? 'w-64 opacity-100 pointer-events-auto'
                                 : 'w-0 opacity-0 pointer-events-none'
@@ -163,8 +162,8 @@ function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCoun
                         {cartItemsCount > 0 && (
                             <span
                                 className={`absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center`}>
-                {cartItemsCount > 99 ? '99+' : cartItemsCount}
-              </span>
+                                {cartItemsCount > 99 ? '99+' : cartItemsCount}
+                              </span>
                         )}
                         <span className="sr-only">장바구니</span>
                     </Link>
@@ -178,7 +177,7 @@ function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCoun
                     )}
                 </div>
             ) : (
-                <div className="flex items-center space-x-2 relative">
+                <div className="flex items-center space-x-3.5 relative">
                     {/* 검색 오버레이 (비로그인 상태) */}
                     <div
                         className={`absolute right-0 flex items-center transition-all duration-300 ease-in-out bg-white/90 backdrop-blur-sm rounded-full border ${
@@ -206,18 +205,21 @@ function UserInfo({user, cartItemsCount = 0}: { user: User | null, cartItemsCoun
                             </div>
                         </FormContainer>
                     </div>
-
-                    <button onClick={handleOpenSearch}>
-                        <IoSearchOutline className={'w-7 h-7'}/>
-                    </button>
-
                     <Link href="/login">
-                        <PiUserLight className="w-7 h-7"/>
+                        <PiUserLight className="w-6 h-6"/>
                     </Link>
+                    <button onClick={handleOpenSearch}>
+                        <IoSearchOutline className={'w-6 h-6'}/>
+                    </button>
+                    <Link href="/cart" className={`relative ${searchOpen && 'hidden'}`}>
+                        <ShoppingBag className="w-5 h-5"/>
+                        <span className="sr-only">장바구니</span>
+                    </Link>
+                    <Menu user={null}/>
                 </div>
             )}
         </>
     );
 }
 
-export default UserInfo;
+export default RightMenu;

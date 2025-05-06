@@ -6,18 +6,29 @@ import {
     SheetTitle,
     SheetTrigger,
 } from "@/components/ui/sheet"
-import React from 'react';
+import React, {useState} from 'react';
 import {MdAdminPanelSettings} from "react-icons/md";
 import {CgMenuRightAlt} from "react-icons/cg";
 import Link from "next/link";
 import {User} from "@supabase/supabase-js";
 import {signOut} from "@/app/(main)/login/actions";
-function Menu({user}: {user: User}) {
+import {useRouter} from "next/navigation";
+function Menu({user}: {user: User|null}) {
+    const [isOpen,setIsOpen]=useState(false);
+    const router = useRouter();
+    const handleLoginStatus=async()=>{
+        if(user){
+            await signOut()
+            router.push('/main')
+        }else{
+            router.push('/login')
+        }
+        setIsOpen(false);
+    }
     return (
-        <Sheet>
+        <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-
-                <button className="focus:outline-none">
+                <button onClick={()=>setIsOpen(true)} className="focus:outline-none">
                     <CgMenuRightAlt className="w-6 h-6"/>
                     <span className="sr-only">메뉴</span>
                 </button>
@@ -89,7 +100,7 @@ function Menu({user}: {user: User}) {
 
                         </nav>
                         <div className="flex flex-col space-y-3">
-                            {user.user_metadata.role === 'admin' && (
+                            {user && user.user_metadata.role === 'admin' && (
                                 <Link
                                     href="/admin"
                                     className="flex items-center py-2 px-3 text-sm lg:text-lg font-medium text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
@@ -99,10 +110,10 @@ function Menu({user}: {user: User}) {
                                 </Link>
                             )}
                             <button
-                                onClick={signOut}
+                                onClick={()=>handleLoginStatus()}
                                 className="py-2 px-3 text-sm lg:text-lg font-medium text-white bg-black hover:bg-gray-800 rounded-md transition-colors"
                             >
-                                로그아웃
+                                {user ? "로그아웃" : "로그인"}
                             </button>
                         </div>
                     </div>

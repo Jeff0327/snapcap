@@ -2,7 +2,7 @@
 import React, {useState} from 'react';
 import {User} from "@supabase/supabase-js";
 import UserDetails from "@/components/admin/users/UserDetails";
-
+import { FiMoreHorizontal } from "react-icons/fi";
 const UserList = ({ users }: {users:User[]}) => {
     const [selectedUser, setSelectedUser] = useState<User | null>(null);
 
@@ -73,9 +73,8 @@ const UserList = ({ users }: {users:User[]}) => {
                             <td className="py-3 px-4">
                                 <button
                                     onClick={() => handleViewDetails(user)}
-                                    className="text-blue-600 hover:text-blue-800 font-medium"
                                 >
-                                    상세정보
+                                    <FiMoreHorizontal className={'w-5 h-5'}/>
                                 </button>
                             </td>
                         </tr>

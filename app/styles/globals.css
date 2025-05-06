@@ -72,7 +72,6 @@ input[type="number"]::-webkit-inner-spin-button {
     scrollbar-width: none;     /* Firefox */
   }
   body {
-
   }
 }
 *::-webkit-scrollbar {

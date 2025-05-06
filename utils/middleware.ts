@@ -12,8 +12,12 @@ export async function updateSession(request: NextRequest) {
             const supabase = await createClient();
 
             // 세션 확인
-            const { data: { session } } = await supabase.auth.getSession();
+            const { data: { session },error } = await supabase.auth.getSession();
 
+            if(error){
+                await supabase.auth.signOut()
+                return NextResponse.redirect(new URL('/login'))
+            }
             // 보호된 경로 처리
             if (url.startsWith("/dashboard") && !session) {
                 return NextResponse.redirect(new URL("/login", request.url));

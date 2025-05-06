@@ -41,3 +41,45 @@ export type CartItem = {
         inventory: number;
     }
 };
+//주소 타입
+export interface DaumPostcodeData {
+    address: string;
+    addressType: string;
+    buildingName: string;
+    apartment?: string;
+    zonecode: string;
+    jibunAddress?: string;
+    roadAddress?: string;
+    autoJibunAddress?: string;
+    autoRoadAddress?: string;
+    userSelectedType?: string;
+    bname?: string;
+    bcode?: string;
+}
+declare global {
+    interface Window {
+        daum: DaumPostcodeInstance;
+    }
+}
+//any 타입수정필요
+declare global {
+    interface Window {
+        BootPay: any;
+    }
+}
+export interface DaumPostcodeInstance {
+    Postcode: new (options: DaumPostcodeOptions) => DaumPostcode;
+}
+export interface DaumPostcodeOptions {
+    oncomplete: (data: DaumPostcodeData) => void;
+    onresize?: (size: { width: number; height: number }) => void;
+    onclose?: () => void;
+    width?: string | number;
+    height?: string | number;
+    animation?: boolean;
+    focusInput?: boolean;
+    autoMapping?: boolean;
+}
+export interface DaumPostcode {
+    open: () => void;
+}

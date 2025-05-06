@@ -11,6 +11,7 @@ const config: Config = {
             fontFamily: {
                 'jalnan': ['jalnan', 'sans-serif'],
                 'Nanum':['Nanum','sans-serif'],
+                'GongGothic':['GongGothic','sans-serif'],
             },
         },
     },

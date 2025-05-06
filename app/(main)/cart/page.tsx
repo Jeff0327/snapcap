@@ -1,8 +1,9 @@
-import React from 'react';
+import React, {Suspense} from 'react';
 import {createClient} from "@/utils/server";
 import {redirect} from "next/navigation";
 import {CartList} from "@/components/main/cart/CartList";
 import {getCartItems} from "@/app/(main)/cart/actions";
+import Loading from "@/components/layout/Loading";
 
 async function Page() {
     const supabase = await createClient()
