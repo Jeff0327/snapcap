@@ -13,6 +13,7 @@ import PhoneVerifyForm from "@/components/order/verifyCheck/PhoneVerifyForm";
 import useAlert from "@/lib/notiflix/useAlert";
 import {User} from "@supabase/supabase-js";
 import {useLoading} from "@/components/layout/LoadingProvider";
+import BootpayPayment from "@/lib/payment/Bootpayment";
 
 export default function OrderForm({ product ,user}: { product: ProductsJson; user:User |null }) {
     const searchParams = useSearchParams();
@@ -21,6 +22,7 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
     const color = searchParams.get('color') || null;
     const [address, setAddress] = useState('');
     const {showLoading,hideLoading}= useLoading()
+    const router = useRouter()
     // 주문자 정보
     const [name, setName] = useState('');
     const [phone, setPhone] = useState('');
@@ -72,15 +74,17 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
         setPhoneVerified(verified);
     };
 
-    const handlePayment=async()=>{
-        try{
-            showLoading()
-        }catch(error){
-            return notify.failure('결제중 에러가 발생하였습니다.')
-        }finally {
-            hideLoading()
-        }
-    }
+    const handlePaymentSuccess = (data:any) => {
+        console.log('결제 성공:', data);
+        // 여기서 주문 완료 처리 로직 실행
+        notify.success('결제가 완료되었습니다.');
+        router.push(`/order/complete/${data.receipt_id}`);
+    };
+
+    const handlePaymentFailure = (data:any) => {
+        if(data.event==="cancel") return;
+        else notify.failure('결제에 실패했습니다. 다시 시도해주세요.');
+    };
     return (
         <div className={'container mx-auto flex lg:flex-row flex-col justify-between items-start w-full gap-4'}>
             {/* 주문 폼 */}
@@ -220,15 +224,34 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
 
                     {/* 주문 버튼 (데스크톱) */}
                     <div className="hidden lg:block">
-                        <Button
-                            type="submit"
-                            form="order-form"
-                            className="w-full"
+                        <BootpayPayment
+                            applicationId="59a4d323396fa607cbe75de4" // 실제 애플리케이션 ID로 교체
+                            price={getTotalPrice()}
+                            orderName={`${product.name} 외 ${parseInt(quantity) - 1}건`}
+                            orderId={`ORDER_${new Date().getTime()}`}
+                            pg="다날"
+                            method="카드"
+                            user={{
+                                id: user?.id || 'guest',
+                                username: name,
+                                phone: phone,
+                                email: user?.email || ''
+                            }}
+                            items={[
+                                {
+                                    id: product.id,
+                                    name: product.name,
+                                    qty: parseInt(quantity),
+                                    price: product.sale_price || product.price
+                                }
+                            ]}
+                            onSuccess={handlePaymentSuccess}
+                            onFailure={handlePaymentFailure}
+                            onCancel={(data) => console.log('결제 취소:', data)}
                             disabled={!phoneVerified || paymentProcessing}
-                            onClick={()=>handlePayment()}
-                        >
-                            {paymentProcessing ? "처리 중..." : "결제하기"}
-                        </Button>
+                            buttonText={paymentProcessing ? "처리 중..." : "결제하기"}
+                            className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md"
+                        />
                     </div>
 
                     <p className="text-xs text-gray-500 mt-4 text-center">
