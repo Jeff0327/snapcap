@@ -4,20 +4,18 @@ import Image from "next/image";
 
 function Banner() {
     const [activeSlide, setActiveSlide] = useState(0);
-    const [visible, setVisible] = useState(true);
+    const [nextSlide, setNextSlide] = useState<number | null>(null);
+    const [transitioning, setTransitioning] = useState(false);
 
     const slides = [
         {
             image: "/banner/banner_1.jpg",
-
         },
         {
             image: "/banner/banner_2.jpg",
-
         },
         {
             image: "/banner/banner_3.jpg",
-
         },
         {
             image: "/banner/banner_4.jpg",
@@ -27,36 +25,42 @@ function Banner() {
         }
     ];
 
+    // 이미지 자동 전환
     useEffect(() => {
+        if (transitioning) return; // 전환 중이면 타이머 설정 안 함
+
         const timer = setInterval(() => {
-            // 현재 슬라이드를 페이드 아웃
-            setVisible(false);
-
-            // 페이드 아웃 후 다음 슬라이드로 전환
-            setTimeout(() => {
-                setActiveSlide((prev) => (prev + 1) % slides.length);
-                setVisible(true);
-            }, 500); // 페이드 아웃 효과를 위한 시간 (0.5초)
-
+            const next = (activeSlide + 1) % slides.length;
+            startTransition(next);
         }, 5000); // 5초마다 슬라이드 변경
 
         return () => clearInterval(timer); // 컴포넌트 언마운트 시 타이머 정리
-    }, [slides.length]);
+    }, [activeSlide, transitioning, slides.length]);
 
-    // Function to handle dot indicator clicks
-    const handleDotClick = (index:number) => {
-        setVisible(false);
+    // 크로스페이드 트랜지션 시작
+    const startTransition = (index: number) => {
+        setTransitioning(true);
+        setNextSlide(index);
+
+        // 전환 애니메이션 후 active 슬라이드 업데이트
         setTimeout(() => {
             setActiveSlide(index);
-            setVisible(true);
-        }, 500);
+            setNextSlide(null);
+            setTransitioning(false);
+        }, 1000); // 페이드 효과가 완료되는데 걸리는 시간
+    };
+
+    // Function to handle dot indicator clicks
+    const handleDotClick = (index: number) => {
+        if (transitioning || index === activeSlide) return;
+        startTransition(index);
     };
 
     return (
         <main>
             <div className="w-full h-[40vh] lg:h-[80vh] flex flex-col items-center justify-center bg-white relative overflow-hidden">
-                {/* Background image with dark overlay */}
-                <div className={`absolute inset-0 transition-opacity duration-500 ${visible ? 'opacity-100' : 'opacity-0'}`}>
+                {/* 현재 활성화된 슬라이드 */}
+                <div className="absolute inset-0">
                     <Image
                         src={slides[activeSlide].image}
                         alt={`Slide ${activeSlide + 1}`}
@@ -65,8 +69,20 @@ function Banner() {
                         height={1080}
                         priority
                     />
-                    <div className="absolute inset-0"></div>
                 </div>
+
+                {/* 다음 슬라이드 (전환 중에만 표시) */}
+                {nextSlide !== null && (
+                    <div className="absolute inset-0 transition-opacity duration-1000 ease-in-out opacity-0 animate-fadeIn">
+                        <Image
+                            src={slides[nextSlide].image}
+                            alt={`Next Slide ${nextSlide + 1}`}
+                            className="object-cover w-full h-full -translate-y-10"
+                            width={1920}
+                            height={1080}
+                        />
+                    </div>
+                )}
 
                 {/* Bottom navigation dots */}
                 <div className="absolute bottom-2 left-0 right-0 flex justify-center gap-2 z-30 w-full">
@@ -74,10 +90,10 @@ function Banner() {
                         <button
                             key={index}
                             onClick={() => handleDotClick(index)}
-                            className={`w-5 h-5 rounded-full transition-all duration-300 ${
-                                index === activeSlide
+                            className={`h-5 rounded-full transition-all duration-300 ${
+                                index === (nextSlide !== null ? nextSlide : activeSlide)
                                     ? 'bg-gradient-to-r from-purple-300 to-blue-500 w-[50px]'
-                                    : 'bg-gradient-to-b from-purple-200 to-blue-200 hover:bg-gray-300'
+                                    : 'bg-gradient-to-b from-purple-200 to-blue-200 hover:bg-gray-300 w-5'
                             }`}
                             aria-label={`Go to slide ${index + 1}`}
                         />

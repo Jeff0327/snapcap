@@ -21,7 +21,7 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
     const quantity = searchParams.get('quantity') || '1';
     const color = searchParams.get('color') || null;
     const [address, setAddress] = useState('');
-    const {showLoading,hideLoading}= useLoading()
+
     const router = useRouter()
     // 주문자 정보
     const [name, setName] = useState('');
@@ -155,7 +155,7 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
                                 />
                             </div>
 
-                            <AddressSearch onAddressChange={handleAddressChange} />
+                            <AddressSearch/>
                         </div>
                     </div>
                 </div>
@@ -227,6 +227,7 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
                         <BootpayPayment
                             applicationId="59a4d323396fa607cbe75de4" // 실제 애플리케이션 ID로 교체
                             price={getTotalPrice()}
+                            formData={new FormData()}
                             orderName={`${product.name} 외 ${parseInt(quantity) - 1}건`}
                             orderId={`ORDER_${new Date().getTime()}`}
                             pg="다날"

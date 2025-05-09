@@ -14,10 +14,10 @@ interface ProductListProps {
 
 function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListProps) {
     return (
-        <div className="py-4">
+        <div className="py-1">
             {title && (
                 <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg lg:text-3xl font-bold">{title}</h2>
+                    <h2 className="text-lg lg:text-2xl font-jalnan">{title}</h2>
 
                     {viewAllLink && (
                         <Link

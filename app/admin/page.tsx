@@ -1,6 +1,4 @@
 import React from 'react';
-import Editor from "@/lib/editor/Editor";
-import Link from "next/link";
 
 function Page() {
     return (

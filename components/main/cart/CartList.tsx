@@ -76,7 +76,7 @@ export function CartList({ initialCartItems }: CartListProps) {
             notify.failure('장바구니에 상품이 없습니다.');
             return;
         }
-        router.push('/checkout');
+        router.push(`/order?orderAll=true`);
     };
 
     const getTotalPrice = () => {

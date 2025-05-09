@@ -40,60 +40,53 @@ function formatToE164(phone: string): string {
 }
 
 // 전화번호 인증 코드 전송
-export async function sendVerificationCode(formData: FormData): Promise<FormState> {
-    const phone = formData.get('phone') as string;
-
-    // 전화번호 유효성 검사
+export async function sendVerificationCode(phone: string): Promise<FormState> {
     const validationResult = PhoneSchema.safeParse({ phone });
 
     if (!validationResult.success) {
         return {
             code: ERROR_CODES.VALIDATION_ERROR,
-            message: '전화번호 형식이 올바르지 않습니다.'
+            message: '전화번호 형식이 올바르지 않습니다.',
         };
     }
 
     try {
         const supabase = await createClient();
-
-        // 전화번호를 E.164 형식으로 변환
         const e164Phone = formatToE164(phone);
 
-        // Supabase Auth를 통해 실제 SMS OTP 전송
-        const { error } = await supabase.auth.signInWithOtp({
-            phone: e164Phone
-        });
+        const { error } = await supabase.auth.signInWithOtp({ phone: e164Phone });
 
         if (error) {
-            console.error("OTP 전송 에러:", error);
             return {
                 code: ERROR_CODES.DB_ERROR,
-                message: `인증번호 전송에 실패했습니다: ${error.message}`
+                message: `인증번호 전송에 실패했습니다: ${error.message}`,
             };
         }
 
         return {
             code: ERROR_CODES.SUCCESS,
-            message: '인증번호가 발송되었습니다. 전화번호를 확인해주세요.',
-            data: { formattedPhone: e164Phone }
+            message: '인증번호가 발송되었습니다.',
         };
     } catch (error) {
-        console.error("인증번호 발송 에러:", error);
         return {
             code: ERROR_CODES.SERVER_ERROR,
-            message: '인증번호 발송 중 오류가 발생했습니다.'
+            message: '인증번호 발송 중 오류가 발생했습니다.',
         };
     }
 }
 
-// 인증번호 확인
-export async function verifyPhoneCode(formData: FormData): Promise<FormState> {
-    const phone = formData.get('phone') as string;
-    const otp = formData.get('otp') as string;
 
-    // 유효성 검사
+// 인증번호 확인
+export async function verifyPhoneCode(phone: string, otp:string): Promise<FormState> {
+    if(!phone || !otp){
+        return {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: '인증번호를 입력해주세요.'
+        }
+    }
+
     const validationResult = OtpVerificationSchema.safeParse({
-        phone: phone.replace(/^\+/, ''), // + 기호 제거하고 검사
+        phone: phone.replace(/^\+/, ''), // 이건 의미 없어짐
         otp
     });
 
@@ -106,10 +99,10 @@ export async function verifyPhoneCode(formData: FormData): Promise<FormState> {
 
     try {
         const supabase = await createClient();
+        const e164Phone = formatToE164(phone); // ✅ 추가
 
-        // Supabase Auth를 통해 OTP 확인
         const { data, error } = await supabase.auth.verifyOtp({
-            phone,
+            phone: e164Phone, // ✅ 수정
             token: otp,
             type: 'sms'
         });

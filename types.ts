@@ -2,6 +2,7 @@ import {Database} from "@/types/supabase";
 
 export type Products = Database['public']['Tables']['products']['Row'];
 export type Carts = Database['public']['Tables']['carts']['Row'];
+export type Orders = Database['public']['Tables']['orders']['Row'];
 export interface States {
     success: boolean;
     data: any | null;
@@ -82,4 +83,41 @@ export interface DaumPostcodeOptions {
 }
 export interface DaumPostcode {
     open: () => void;
+}
+
+export interface PaymentItem {
+    id: string;
+    name: string;
+    qty: number;
+    price: number;
+}
+
+export interface UserInfo {
+    id?: string;
+    username?: string;
+    phone?: string;
+    email?: string;
+}
+export interface BootpayPaymentProps {
+    applicationId: string;  // 부트페이 애플리케이션 ID
+    price: number;          // 결제 금액
+    orderName: string;      // 주문명
+    orderId: string;        // 주문 ID
+    pg?: string;            // PG사 (기본값: '다날')
+    method?: string;        // 결제 수단 (기본값: '카드')
+    taxFree?: number;       // 면세 금액
+    user?: UserInfo;        // 유저 정보
+    items?: PaymentItem[];  // 주문 아이템
+    cardQuota?: string;     // 할부 개월 수
+    escrow?: boolean;       // 에스크로 사용 여부
+    openType?: string;      // 결제창 타입
+    onSuccess?: (data: any) => void;  // 결제 성공 시 콜백
+    onFailure?: (data: any) => void;  // 결제 실패 시 콜백
+    onCancel?: (data: any) => void;   // 결제 취소 시 콜백
+    onConfirm?: (data: any) => Promise<boolean>;  // 결제 승인 전 콜백
+    onDone?: () => void;    // 결제 완료 시 콜백
+    className?: string;     // 버튼 CSS 클래스
+    buttonText?: string;    // 버튼 텍스트
+    disabled?: boolean;     // 버튼 비활성화 여부
+    formData:FormData;
 }
