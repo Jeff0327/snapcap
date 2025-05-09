@@ -1,35 +1,33 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { ERROR_CODES } from '@/utils/ErrorMessage';
 import useAlert from '@/lib/notiflix/useAlert';
 import { sendVerificationCode, verifyPhoneCode } from '@/app/(main)/order/[id]/actions';
+import usePhoneVerify from "@/lib/store/usePhoneVerifyStore";
 
 interface PhoneVerificationFormProps {
     onVerified?: (verified: boolean) => void;
-    setPhone: React.Dispatch<React.SetStateAction<string>>;
-    phone: string;
 }
 
-function PhoneVerifyForm({ onVerified, setPhone, phone }: PhoneVerificationFormProps) {
+function PhoneVerifyForm({ onVerified }: PhoneVerificationFormProps) {
     const { notify } = useAlert();
-
-    const [codeSent, setCodeSent] = useState(false);
-    const [verified, setVerified] = useState(false);
-    const [verificationMessage, setVerificationMessage] = useState('');
-    const [timeLeft, setTimeLeft] = useState(0);
-    const [resendDisabled, setResendDisabled] = useState(false);
-    const [otp, setOtp] = useState('');
+    const {
+        phone, verified, codeSent, verificationMessage,
+        timeLeft, resendDisabled, otp,
+        setPhone, setVerified, setCodeSent, setVerificationMessage,
+        setTimeLeft, decrementTimeLeft, setResendDisabled, setOtp, resetState
+    } = usePhoneVerify();
 
     useEffect(() => {
         if (!codeSent || verified || timeLeft <= 0) return;
 
         const interval = setInterval(() => {
-            setTimeLeft((prev) => prev - 1);
+            decrementTimeLeft();
         }, 1000);
 
         return () => clearInterval(interval);
-    }, [codeSent, verified, timeLeft]);
+    }, [codeSent, verified, timeLeft, decrementTimeLeft]);
 
     const formatTime = (seconds: number) =>
         `${Math.floor(seconds / 60)}:${String(seconds % 60).padStart(2, '0')}`;
@@ -37,10 +35,7 @@ function PhoneVerifyForm({ onVerified, setPhone, phone }: PhoneVerificationFormP
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setPhone(e.target.value);
         if (codeSent || verified) {
-            setCodeSent(false);
-            setVerified(false);
-            setVerificationMessage('');
-            setTimeLeft(0);
+            resetState();
         }
     };
 
@@ -86,6 +81,7 @@ function PhoneVerifyForm({ onVerified, setPhone, phone }: PhoneVerificationFormP
                     className="w-full px-3 py-2 border rounded-md text-sm"
                 />
                 <button
+                    type="button"
                     onClick={handleSendCode}
                     disabled={verified || !phone || phone.length < 10 || (resendDisabled && codeSent)}
                     className="w-[36vw] md:w-[20vw] lg:w-[16vw] px-2 py-2 text-sm rounded-md text-white bg-blue-600 hover:bg-blue-700 disabled:bg-gray-300"
@@ -112,7 +108,7 @@ function PhoneVerifyForm({ onVerified, setPhone, phone }: PhoneVerificationFormP
                         </div>
                     )}
                     <button
-                        type={'button'}
+                        type="button"
                         onClick={handleVerifyCode}
                         className="w-[36vw] md:w-[20vw] lg:w-[16vw] px-2 py-2 text-sm rounded-md text-white bg-black hover:bg-blue-700"
                     >

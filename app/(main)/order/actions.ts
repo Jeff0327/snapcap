@@ -15,7 +15,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     const addressLine2 = formData.get('addressDetail') as string || '';
     const phoneNumber = formData.get('phoneNumber') as string;
     const notes = formData.get('notes') as string || '';
-
+    const totalAmount= formData.get('totalAmount') as string;
 
     if (!user) {
         return {
@@ -27,7 +27,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     if (!recipientName || !addressLine1 || !addressLine2 ||!phoneNumber) {
         return {
             code: ERROR_CODES.VALIDATION_ERROR,
-            message: '필수값이 입력되지않았습니다.'
+            message: '주문자 정보와 배송지 정보를 확인해주세요.'
         };
     }
 
@@ -64,7 +64,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
         }
 
         // 2. 주소 정보 저장
-        const { data: address, error: addressError } = await supabase
+        const { data:address,error: addressError } = await supabase
             .from('addresses')
             .insert({
                 customer_id: customer.id,
@@ -96,28 +96,28 @@ export async function createOrder(formData: FormData): Promise<FormState> {
         }
 
         // 4. 주문 생성
-        // const { data: order, error: orderError } = await supabase
-        //     .from('orders')
-        //     .insert({
-        //         user_id: user.id,
-        //         address_id: address.id,
-        //         total_amount: items,
-        //         final_amount: finalAmount,
-        //         payment_method: paymentMethod,
-        //         payment_status: 'paid', // 테스트에서는 결제 취소 시에도 paid로 설정
-        //         order_status: 'processing',
-        //         notes: notes
-        //     })
-        //     .select()
-        //     .single();
+        const { data: order, error: orderError } = await supabase
+            .from('orders')
+            .insert({
+                user_id: user.id,
+                address_id: address.id,
+                total_amount: +totalAmount,
+                final_amount: +totalAmount,
+                payment_method: '',
+                payment_status: 'paid', // 테스트에서는 결제 취소 시에도 paid로 설정
+                order_status: 'processing',
+                notes: notes
+            })
+            .select()
+            .single();
 
-        // if (orderError) {
-        //     console.error('Failed to create order:', orderError);
-        //     return {
-        //         code: ERROR_CODES.DB_ERROR,
-        //         message: '주문 생성에 실패했습니다.'
-        //     };
-        // }
+        if (orderError) {
+            console.error('Failed to create order:', orderError);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '주문 생성에 실패했습니다.'
+            };
+        }
 
         // 5. 주문 아이템 생성 로직을 여기에 추가할 수 있습니다
         // (order_items 테이블이 있다면)

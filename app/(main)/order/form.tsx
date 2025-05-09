@@ -16,6 +16,9 @@ import { createOrder } from "@/app/(main)/order/actions";
 import { Card } from "@/components/ui/card";
 import useAddressStore from "@/lib/store/useAddressStore";
 import {Button} from "@/components/ui/button";
+import usePhoneVerify from "@/lib/store/usePhoneVerifyStore";
+import Image from "next/image";
+import {formatPrice, getOrderName, getTotalPrice, getTotalQuantity} from "@/utils/utils";
 
 interface OrderFormMultipleProps {
     cartItems: CartItem[];
@@ -27,23 +30,21 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
     const { notify } = useAlert();
     const {
         address,
-        detail,
         contact,
         setContact,
     } = useAddressStore();
 
-    // 주문자 정보
-    const [name, setName] = useState('');
-    const [phone, setPhone] = useState('');
+    const {
+        phone, verified,
+        setVerified
+    } = usePhoneVerify();
 
+    const [name,setName] = useState("");
     // 배송지 정보
     const [recipientName, setRecipientName] = useState('');
 
     // 기타 상태
     const [sameAsOrderer, setSameAsOrderer] = useState(true);
-    const [phoneVerified, setPhoneVerified] = useState(false);
-
-    const fullAddress = detail ? `${address}, ${detail}` : address;
 
     // 주문자와 배송지 정보 동기화 처리
     const handleSameAsOrdererChange = (checked: boolean) => {
@@ -60,23 +61,23 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
 
     // 전화번호 인증 상태 업데이트
     const handlePhoneVerified = (verified: boolean) => {
-        setPhoneVerified(verified);
+        setVerified(verified);
     };
 
     const handleResult = (formState: FormState) => {
         if (formState.code === ERROR_CODES.SUCCESS) {
             router.push(`/order/payment?id=${formState.data}`);
         } else {
-            notify.failure('처리 중 에러가 발생하였습니다.');
+            notify.failure(`${formState.message}`);
         }
     };
 
     return (
-        <div className="container mx-auto flex lg:flex-row flex-col items-start w-full gap-4">
+        <div className="container mx-auto flex lg:flex-row flex-col items-start w-full gap-4 lg:max-w-3xl">
                 <div className="space-y-8 w-full">
                     {/* 주문자 정보 */}
                     <Card className="bg-white p-6">
-                        <h2 className="text-lg font-bold mb-4 pb-2 border-b">주문자 정보</h2>
+                        <h2 className="text-lg font-jalnan mb-4 pb-2 border-b">주문자 정보</h2>
                         <div className="space-y-4">
                             <div>
                                 <Label htmlFor="name">이름</Label>
@@ -95,23 +96,16 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                                 <Label htmlFor="phone">연락처</Label>
                                 <PhoneVerifyForm
                                     onVerified={handlePhoneVerified}
-                                    setPhone={(value) => {
-                                        const val = typeof value === 'function' ? value('') : value;
-                                        setPhone(val);
-                                        if (sameAsOrderer) setContact(val);
-                                    }}
-                                    phone={phone}
                                 />
                             </div>
                             <input type="hidden" name="email" value={user?.email || ''} />
                         </div>
                     </Card>
-
                     {/* 배송지 정보 */}
                     <FormContainer action={createOrder} onResult={handleResult}>
                     <div className="bg-white p-6 rounded-lg shadow">
                         <div className="flex justify-between items-center mb-4 pb-2 border-b">
-                            <h2 className="text-lg font-bold">배송지 정보</h2>
+                            <h2 className="text-lg font-jalnan">배송지 정보</h2>
                             <div className="flex items-center gap-2 text-center">
                                 <Label htmlFor="sameAsOrderer" className="cursor-pointer mb-0">주문자 정보와 동일</Label>
                                 <Checkbox
@@ -149,10 +143,65 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                             <AddressSearch />
                         </div>
                     </div>
-                        <Button type={'submit'} className={'w-full py-8 my-2 text-lg bg-blue-300 rounded-lg text-white'}>
+                        <input type={'hidden'} name={'totalAmount'} value={formatPrice(getTotalPrice(cartItems))}/>
+                        <Button type={'submit'} className={`w-full py-6 mt-4 text-lg bg-blue-300 rounded-lg text-white ${!contact || !recipientName || !phone || !verified || !address ? 'bg-blue-300' : 'bg-blue-500'}`}>
                             배송지 입력
                         </Button>
                     </FormContainer>
+                    {/*주문 요약*/}
+                    <Card className="w-full bg-white p-6 rounded-lg top-6">
+                        <h2 className="text-lg font-bold mb-4 pb-2 border-b">주문 요약</h2>
+                        <div className="mb-4">
+                            <div className="flex space-x-4 mb-4">
+                                {cartItems.length > 0 && cartItems[0].product && cartItems[0].product.images && cartItems[0].product.images[0] && (
+                                    <div className="w-20 h-20 flex-shrink-0">
+                                        <Image
+                                            src={cartItems[0].product.images[0]}
+                                            alt={cartItems[0].product.name || '상품 이미지'}
+                                            width={80}
+                                            height={80}
+                                            className="w-full h-full object-cover rounded"
+                                        />
+                                    </div>
+                                )}
+                                <div>
+                                    <h3 className="font-medium">{getOrderName(cartItems)}</h3>
+                                    <p className="text-sm text-gray-600">수량: {getTotalQuantity(cartItems)}개</p>
+                                </div>
+                            </div>
+
+                            <div className="space-y-2 mb-4">
+                                {cartItems.map((item, index) => (
+                                    <div key={item.id || index} className="flex justify-between text-sm">
+                                            <span className="text-gray-600 truncate max-w-[60%]">
+                                                {item.product?.name} {item.color && `(${item.color})`} x {item.quantity}
+                                            </span>
+                                        <span>
+                                                {item.product?.sale_price ? (
+                                                    <span className="text-red-500">
+                                                        {formatPrice(item.product.sale_price * item.quantity)}
+                                                    </span>
+                                                ) : (
+                                                    formatPrice((item.product?.price || 0) * item.quantity)
+                                                )}
+                                            </span>
+                                    </div>
+                                ))}
+
+                                <div className="flex justify-between pt-2 border-t">
+                                    <span className="text-gray-600">배송비</span>
+                                    <span>무료</span>
+                                </div>
+                            </div>
+
+                            <div className="pt-3 border-t">
+                                <div className="flex justify-between text-lg font-bold">
+                                    <span>총 결제금액</span>
+                                    <span>{formatPrice(getTotalPrice(cartItems))}</span>
+                                </div>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
         </div>
     );

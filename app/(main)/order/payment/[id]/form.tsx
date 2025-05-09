@@ -30,16 +30,6 @@ function CreatePaymentForm({cartItems}: {cartItems: CartItem[]}) {
         else notify.failure('결제에 실패했습니다. 다시 시도해주세요.');
     };
 
-    // 주문 상품명 생성 (첫 번째 상품명 + 나머지 수량)
-    const getOrderName = () => {
-        if (cartItems.length === 0) return '';
-        if (cartItems.length === 1) return cartItems[0].product?.name || '';
-
-        const firstItemName = cartItems[0].product?.name || '';
-        const remainingCount = cartItems.length - 1;
-        return `${firstItemName} 외 ${remainingCount}건`;
-    };
-
     // 총 상품 수량 계산
     const getTotalQuantity = () => {
         return cartItems.reduce((total, item) => total + item.quantity, 0);

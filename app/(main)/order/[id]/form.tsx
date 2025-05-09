@@ -111,7 +111,7 @@ export default function OrderForm({ product ,user}: { product: ProductsJson; use
 
                             <div>
                                 <Label htmlFor="phone">연락처</Label>
-                                <PhoneVerifyForm onVerified={handlePhoneVerified} setPhone={setPhone} phone={phone}/>
+                                <PhoneVerifyForm onVerified={handlePhoneVerified}/>
                             </div>
                             <input type={'hidden'} name={'email'} value={user?.email ||''}/>
                         </div>
