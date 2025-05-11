@@ -20,12 +20,12 @@ const OrderInfo = ({ order }: { order: any }) => {
 
                 <div>
                     <p className="text-gray-600">주문 상태</p>
-                    <OrderStatus status={order.order_status} />
+                    <OrderStatus status={order.order_status} type="order" />
                 </div>
 
                 <div>
                     <p className="text-gray-600">결제 상태</p>
-                    <OrderStatus status={order.payment_status} />
+                    <OrderStatus status={order.payment_status} type="payment" />
                 </div>
 
                 <div>

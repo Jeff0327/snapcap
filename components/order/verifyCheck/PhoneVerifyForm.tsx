@@ -109,7 +109,7 @@ function PhoneVerifyForm({ onVerified }: PhoneVerificationFormProps) {
                     )}
                     <button
                         type="button"
-                        onClick={handleVerifyCode}
+                        onClick={()=>handleVerifyCode()}
                         className="w-[36vw] md:w-[20vw] lg:w-[16vw] px-2 py-2 text-sm rounded-md text-white bg-black hover:bg-blue-700"
                     >
                         <span className="font-jalnan text-xs md:text-md">확인</span>

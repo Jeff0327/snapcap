@@ -76,7 +76,7 @@ function Menu({user}: {user: User|null}) {
                                           className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         내 정보
                                     </Link>
-                                    <Link href="/shipping"
+                                    <Link href="/order/complete"
                                           className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         주문 내역
                                     </Link>

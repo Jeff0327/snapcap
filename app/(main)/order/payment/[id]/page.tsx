@@ -35,7 +35,7 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
     const order = result.data;
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
+        <div className="min-h-screen py-8 mt-8 lg:mt-12">
             <div className="max-w-3xl mx-auto p-4">
                 <h1 className="text-2xl font-bold mb-6">결제 정보</h1>
 

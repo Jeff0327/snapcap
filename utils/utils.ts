@@ -129,3 +129,15 @@ export function formatOrderNumberWithDate(uuid: string, digits: number = 6): str
 
     return `${datePrefix}-${uuidPart}`;
 }
+export function formatToNormalPhone(phone: string): string {
+    // E.164 형식이나 다른 형식에서 숫자만 추출
+    const cleaned = phone.replace(/\D/g, '');
+
+    // 국가 코드(82) 제거하고 앞에 0 추가
+    if (cleaned.startsWith('82')) {
+        return `0${cleaned.substring(2)}`;
+    }
+
+    // 이미 0으로 시작하거나 다른 형식이면 그대로 반환
+    return cleaned;
+}
