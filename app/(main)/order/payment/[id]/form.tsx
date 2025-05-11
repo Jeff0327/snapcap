@@ -1,191 +1,204 @@
-'use client'
 import React from 'react';
-import {Label} from "@/components/ui/label";
-import useAlert from "@/lib/notiflix/useAlert";
-import {useRouter} from "next/navigation";
-import {CartItem} from "@/types";
+import { createClient } from "@/utils/server";
+import { redirect } from "next/navigation";
+import { getOrdersProduct } from "@/app/(main)/order/payment/[id]/actions";
+import Image from "next/image";
 
-function CreatePaymentForm({cartItems}: {cartItems: CartItem[]}) {
+// 가격 포맷팅 함수
+const formatPrice = (price: number) => {
+    return new Intl.NumberFormat('ko-KR').format(price) + '원';
+};
 
-    const {notify} = useAlert()
-    const router = useRouter()
-
-    // 총 가격 계산
-    const getTotalPrice = () => {
-        return cartItems.reduce((total, item) => {
-            if (!item.product) return total;
-            const price = item.product.sale_price || item.product.price;
-            return total + (price * item.quantity);
-        }, 0);
-    };
-    const handlePaymentSuccess = (data: any) => {
-        console.log('결제 성공:', data);
-        // 여기서 주문 완료 처리 로직 실행
-        notify.success('결제가 완료되었습니다.');
-        router.push(`/order/complete/${data.receipt_id}`);
+// 주문 상태 표시 컴포넌트
+const OrderStatus = ({ status }: { status: string }) => {
+    const getStatusColor = () => {
+        switch (status) {
+            case 'pending': return 'bg-yellow-100 text-yellow-800';
+            case 'paid': return 'bg-green-100 text-green-800';
+            case 'shipping': return 'bg-blue-100 text-blue-800';
+            case 'completed': return 'bg-purple-100 text-purple-800';
+            case 'cancelled': return 'bg-red-100 text-red-800';
+            default: return 'bg-gray-100 text-gray-800';
+        }
     };
 
-    const handlePaymentFailure = (data: any) => {
-        if (data.event === "cancel") return;
-        else notify.failure('결제에 실패했습니다. 다시 시도해주세요.');
+    const getStatusText = () => {
+        switch (status) {
+            case 'pending': return '결제 대기';
+            case 'paid': return '결제 완료';
+            case 'shipping': return '배송 중';
+            case 'completed': return '배송 완료';
+            case 'cancelled': return '주문 취소';
+            default: return status;
+        }
     };
 
-    // 총 상품 수량 계산
-    const getTotalQuantity = () => {
-        return cartItems.reduce((total, item) => total + item.quantity, 0);
-    };
     return (
-        <div
-            className={'contain-none xl:container mx-auto flex lg:flex-row flex-col justify-between items-start w-full gap-4'}>
-            {/* 주문 폼 */}
-            <div className={'w-full lg:w-2/3'}>
-                <div className="space-y-8">
-                    {/* 주문자 정보 */}
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <h2 className="text-lg font-bold mb-4 pb-2 border-b">주문자 정보</h2>
+        <span className={`px-3 py-1 rounded-full text-sm font-medium ${getStatusColor()}`}>
+      {getStatusText()}
+    </span>
+    );
+};
 
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="name">이름</Label>
+// 주문 정보 컴포넌트
+const OrderInfo = ({ order }: { order: any }) => {
+    return (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4 border-b pb-2">주문 정보</h2>
 
-                            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <p className="text-gray-600">주문 번호</p>
+                    <p className="font-medium">{order.order_number || '처리 중'}</p>
+                </div>
 
-                            <div>
-                                <Label htmlFor="phone">연락처</Label>
+                <div>
+                    <p className="text-gray-600">주문 일자</p>
+                    <p className="font-medium">{new Date(order.created_at).toLocaleDateString('ko-KR')}</p>
+                </div>
 
-                            </div>
-                        </div>
-                    </div>
+                <div>
+                    <p className="text-gray-600">주문 상태</p>
+                    <OrderStatus status={order.order_status} />
+                </div>
 
-                    {/* 배송지 정보 */}
-                    <div className="bg-white p-6 rounded-lg shadow">
-                        <div className="flex justify-between items-center mb-4 pb-2 border-b">
-                            <h2 className="text-lg font-bold">배송지 정보</h2>
+                <div>
+                    <p className="text-gray-600">결제 상태</p>
+                    <OrderStatus status={order.payment_status} />
+                </div>
 
-                        </div>
+                <div>
+                    <p className="text-gray-600">결제 수단</p>
+                    <p className="font-medium">{order.payment_method === 'pending' ? '결제 대기' : order.payment_method}</p>
+                </div>
 
-                        <div className="space-y-4">
-                            <div>
-                                <Label htmlFor="recipientName">수령인</Label>
-
-                            </div>
-
-                            <div>
-                                <Label htmlFor="recipientPhone">연락처</Label>
-
-                            </div>
-
-                        </div>
-                    </div>
+                <div>
+                    <p className="text-gray-600">총 결제 금액</p>
+                    <p className="font-bold text-lg">{formatPrice(order.total_amount)}</p>
                 </div>
             </div>
 
-            {/* 주문 요약 부분 */}
-            {/*<div className="lg:w-1/3 w-full">*/}
-            {/*    <div className="bg-white p-6 rounded-lg shadow sticky top-6">*/}
-            {/*        <h2 className="text-lg font-bold mb-4 pb-2 border-b">주문 요약</h2>*/}
-
-            {/*        <div className="mb-4">*/}
-            {/*            <div className="flex space-x-4 mb-4">*/}
-            {/*                {cartItems.length > 0 && cartItems[0].product && cartItems[0].product.images && cartItems[0].product.images[0] && (*/}
-            {/*                    <div className="w-20 h-20 flex-shrink-0">*/}
-            {/*                        <Image*/}
-            {/*                            src={cartItems[0].product.images[0]}*/}
-            {/*                            alt={cartItems[0].product.name || '상품 이미지'}*/}
-            {/*                            width={80}*/}
-            {/*                            height={80}*/}
-            {/*                            className="w-full h-full object-cover rounded"*/}
-            {/*                        />*/}
-            {/*                    </div>*/}
-            {/*                )}*/}
-            {/*                <div>*/}
-            {/*                    <h3 className="font-medium">{getOrderName()}</h3>*/}
-            {/*                    <p className="text-sm text-gray-600">수량: {getTotalQuantity()}개</p>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-
-            {/*            <div className="space-y-2 mb-4">*/}
-            {/*                {cartItems.map((item, index) => (*/}
-            {/*                    <div key={item.id || index} className="flex justify-between text-sm">*/}
-            {/*                        <span className="text-gray-600 truncate max-w-[60%]">*/}
-            {/*                            {item.product?.name} {item.color && `(${item.color})`} x {item.quantity}*/}
-            {/*                        </span>*/}
-            {/*                        <span>*/}
-            {/*                            {item.product?.sale_price ? (*/}
-            {/*                                <span className="text-red-500">*/}
-            {/*                                    {formatPrice(item.product.sale_price * item.quantity)}*/}
-            {/*                                </span>*/}
-            {/*                            ) : (*/}
-            {/*                                formatPrice((item.product?.price || 0) * item.quantity)*/}
-            {/*                            )}*/}
-            {/*                        </span>*/}
-            {/*                    </div>*/}
-            {/*                ))}*/}
-
-            {/*                <div className="flex justify-between pt-2 border-t">*/}
-            {/*                    <span className="text-gray-600">배송비</span>*/}
-            {/*                    <span>무료</span>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-
-            {/*            <div className="pt-3 border-t">*/}
-            {/*                <div className="flex justify-between text-lg font-bold">*/}
-            {/*                    <span>총 결제금액</span>*/}
-            {/*                    <span>{formatPrice(getTotalPrice())}</span>*/}
-            {/*                </div>*/}
-            {/*            </div>*/}
-            {/*        </div>*/}
-
-            {/*        /!* 주문 버튼 (데스크톱) *!/*/}
-            {/*        <div className="hidden lg:block">*/}
-            {/*            <BootpayPayment*/}
-            {/*                formData={new FormData()}*/}
-            {/*                applicationId={process.env.NEXT_PUBLIC_BOOTPAY_KEY!} // 실제 애플리케이션 ID로 교체*/}
-            {/*                price={getTotalPrice()}*/}
-            {/*                orderName={getOrderName()}*/}
-            {/*                orderId={`ORDER_${new Date().getTime()}`}*/}
-            {/*                pg="다날"*/}
-            {/*                method="카드"*/}
-            {/*                user={{*/}
-            {/*                    id: user?.id || 'guest',*/}
-            {/*                    username: name,*/}
-            {/*                    phone: phone,*/}
-            {/*                    email: user?.email || ''*/}
-            {/*                }}*/}
-            {/*                items={cartItems.map(item => ({*/}
-            {/*                    id: item.product?.id || '',*/}
-            {/*                    name: item.product?.name || '',*/}
-            {/*                    qty: item.quantity,*/}
-            {/*                    price: item.product?.sale_price || item.product?.price || 0*/}
-            {/*                }))}*/}
-            {/*                onSuccess={handlePaymentSuccess}*/}
-            {/*                onFailure={handlePaymentFailure}*/}
-            {/*                onCancel={(data) => console.log('결제 취소:', data)}*/}
-            {/*                // disabled={!phoneVerified || paymentProcessing}*/}
-            {/*                buttonText={paymentProcessing ? "처리 중..." : "결제하기"}*/}
-            {/*                className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md"*/}
-            {/*            />*/}
-            {/*        </div>*/}
-
-            {/*        <p className="text-xs text-gray-500 mt-4 text-center">*/}
-            {/*            주문하기 버튼을 클릭하면 구매조건에 동의하는 것으로 간주합니다.*/}
-            {/*        </p>*/}
-            {/*    </div>*/}
-            {/*</div>*/}
-
-            {/*/!* 주문 버튼 (모바일) *!/*/}
-            {/*<div className="lg:hidden w-full">*/}
-            {/*    <Button*/}
-            {/*        type="submit"*/}
-            {/*        form="order-form"*/}
-            {/*        className="w-full bg-blue-300 hover:bg-blue-700 hover:transition-colors duration-300 text-white"*/}
-            {/*        disabled={!phoneVerified || paymentProcessing}*/}
-            {/*    >*/}
-            {/*        {paymentProcessing ? "처리 중..." : "결제하기"}*/}
-            {/*    </Button>*/}
-            {/*</div>*/}
+            {order.notes && (
+                <div className="mt-4 pt-3 border-t">
+                    <p className="text-gray-600">배송 메모</p>
+                    <p>{order.notes}</p>
+                </div>
+            )}
         </div>
     );
-}
+};
 
-export default CreatePaymentForm;
+// 배송지 정보 컴포넌트
+const ShippingInfo = ({ address }: { address: any }) => {
+    if (!address) return <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2">배송지 정보</h2>
+        <p className="text-gray-500">배송지 정보를 불러올 수 없습니다.</p>
+    </div>;
+
+    return (
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+            <h2 className="text-xl font-semibold mb-4 border-b pb-2">배송지 정보</h2>
+
+            <div className="space-y-3">
+                <div>
+                    <p className="text-gray-600">받는 사람</p>
+                    <p className="font-medium">{address.recipient_name}</p>
+                </div>
+
+                <div>
+                    <p className="text-gray-600">연락처</p>
+                    <p className="font-medium">{address.phone_number}</p>
+                </div>
+
+                <div>
+                    <p className="text-gray-600">주소</p>
+                    <p className="font-medium">{address.address_line1} {address.address_line2}</p>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// 주문 상품 컴포넌트
+const OrderProducts = ({ products }: { products: any[] }) => {
+    if (!products || products.length === 0) return <div className="bg-white rounded-lg shadow-md p-6">
+        <h2 className="text-xl font-semibold mb-4 border-b pb-2">주문 상품</h2>
+        <p className="text-gray-500">주문 상품 정보를 불러올 수 없습니다.</p>
+    </div>;
+
+    return (
+        <div className="bg-white rounded-lg shadow-md p-6">
+            <h2 className="text-xl font-semibold mb-4 border-b pb-2">주문 상품 ({products.length}개)</h2>
+
+            <div className="space-y-4">
+                {products.map((item, index) => (
+                    <div key={index} className="flex items-center border-b pb-4 last:border-b-0 last:pb-0">
+                        <div className="w-20 h-20 flex-shrink-0 bg-gray-100 rounded mr-4 overflow-hidden">
+                            {item.product_image ? (
+                                <Image
+                                    src={item.product_image}
+                                    alt={item.product_name}
+                                    width={80}
+                                    height={80}
+                                    className="w-full h-full object-cover"
+                                />
+                            ) : (
+                                <div className="w-full h-full flex items-center justify-center text-gray-400">
+                                    이미지 없음
+                                </div>
+                            )}
+                        </div>
+
+                        <div className="flex-grow">
+                            <h3 className="font-medium">{item.product_name}</h3>
+                            {item.color && (
+                                <p className="text-sm text-gray-600">
+                                    {item.color} {item.color_code &&
+                                    <span className="inline-block w-3 h-3 rounded-full ml-1"
+                                          style={{ backgroundColor: item.color_code }} />
+                                }
+                                </p>
+                            )}
+                            <p className="text-sm text-gray-600">수량: {item.quantity}개</p>
+                        </div>
+
+                        <div className="text-right">
+                            <p className="font-medium">{formatPrice(item.price * item.quantity)}</p>
+                            {item.original_price > item.price && (
+                                <p className="text-sm text-gray-500 line-through">
+                                    {formatPrice(item.original_price * item.quantity)}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-6 pt-4 border-t">
+                <div className="flex justify-between items-center">
+                    <span className="font-medium">총 상품 금액</span>
+                    <span className="font-bold text-lg">
+            {formatPrice(products.reduce((total, item) => total + (item.price * item.quantity), 0))}
+          </span>
+                </div>
+            </div>
+        </div>
+    );
+};
+
+// 결제 버튼 컴포넌트
+const PaymentButton = ({ order }: { order: any }) => {
+    if (order.payment_status !== 'pending') return null;
+
+    return (
+        <div className="mt-6">
+            <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-3 px-4 rounded">
+                결제 진행하기
+            </button>
+            <p className="text-xs text-gray-500 mt-2 text-center">
+                결제하기 버튼을 클릭하면 구매조건에 동의하는 것으로 간주합니다.
+            </p>
+        </div>
+    );
+};
+

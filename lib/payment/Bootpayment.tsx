@@ -1,10 +1,14 @@
+// BootpayPayment.tsx 수정
 'use client';
 
 import { Bootpay } from '@bootpay/client-js';
 import { useLoading } from "@/components/layout/LoadingProvider";
-import {BootpayPaymentProps} from "@/types";
-import {createOrder} from "@/app/(main)/order/actions";
-import {ERROR_CODES} from "@/utils/ErrorMessage";
+import { BootpayPaymentProps } from "@/types";
+
+interface ExtendedBootpayPaymentProps extends BootpayPaymentProps {
+    // 주문 업데이트 함수를 프롭스로 받음
+    onOrderUpdate?: (orderId: string, paymentData: any) => Promise<any>;
+}
 
 const BootpayPayment = ({
                             applicationId,
@@ -21,15 +25,15 @@ const BootpayPayment = ({
                             onSuccess,
                             onFailure,
                             onCancel,
-                            formData,
+                            onOrderUpdate, // 새로운 프롭
                             onConfirm,
                             onDone,
                             className = 'w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-md',
                             buttonText = '결제하기',
                             disabled = false
-                        }: BootpayPaymentProps) => {
+                        }: ExtendedBootpayPaymentProps) => {
 
-    const {showLoading, hideLoading, isLoading} = useLoading();
+    const { showLoading, hideLoading, isLoading } = useLoading();
 
     const handlePayment = async () => {
         try {
@@ -63,25 +67,35 @@ const BootpayPayment = ({
                 }
             });
 
-            console.log('this is',response)
+            console.log('결제 응답:', response);
+
             // 결제 성공
             if (response.event === 'done') {
-                // 주문 데이터베이스에 저장
-                try {
-                    const result = await createOrder(formData);
-                    if (result.code===ERROR_CODES.SUCCESS) {
-                        console.log('Order created successfully');
-                        if (onSuccess) onSuccess(response);
-                    } else {
-                        console.error('Failed to create order:', result.message);
-                        if (onFailure) onFailure({
-                            error: result.message,
-                            code: result.code
+                let updateResult;
+
+                // 주문 업데이트 함수가 제공되었다면 호출
+                if (onOrderUpdate) {
+                    try {
+                        // 주문 ID와 결제 데이터를 전달
+                        updateResult = await onOrderUpdate(orderId, {
+                            paymentMethod: response.data.method || '카드',
+                            receiptId: response.data.receipt_id,
+                            paymentData: response.data
                         });
+
+                        console.log('주문 상태 업데이트 결과:', updateResult);
+                    } catch (updateError) {
+                        console.error('주문 상태 업데이트 실패:', updateError);
+                        updateResult = { success: false, error: updateError };
                     }
-                } catch (orderError) {
-                    console.error('Failed to create order:', orderError);
-                    if (onFailure) onFailure(orderError);
+                }
+
+                // 성공 콜백 호출
+                if (onSuccess) {
+                    onSuccess({
+                        ...response,
+                        updateResult // 업데이트 결과 포함
+                    });
                 }
             }
             // 결제 실패
@@ -90,29 +104,15 @@ const BootpayPayment = ({
             }
             // 결제 취소
             else if (response.event === 'cancel') {
-                // 결제 취소 시에는 orders 테이블에 주문 정보 추가 (테스트용)
-                console.log("결제취소")
-                try {
-                    // 결제 취소 시에도 주문을 생성 (테스트용)
-                    const result = await createOrder(formData);
-                    if (result.code === ERROR_CODES.SUCCESS) {
-                        console.log('Cancelled order recorded for testing');
-                    } else {
-                        console.error('Failed to create cancelled order:', result.message);
-                    }
-
-                    if (onCancel) onCancel(response);
-                } catch (orderError) {
-                    console.error('Failed to create cancelled order:', orderError);
-                }
-
-                return;
+                console.log("결제취소");
+                if (onCancel) onCancel(response);
             }
 
             // 결제 완료 콜백
             if (onDone) onDone();
 
         } catch (error) {
+            console.error('결제 처리 중 오류:', error);
             if (onFailure) onFailure(error);
         } finally {
             hideLoading();

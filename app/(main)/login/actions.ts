@@ -24,8 +24,6 @@ export async function signIn(formData: FormData): Promise<FormState> {
             password,
         });
 
-        console.log('this is',data)
-
         if (error) {
             console.log('error:',error)
             return {

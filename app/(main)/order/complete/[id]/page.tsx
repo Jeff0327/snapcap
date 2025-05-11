@@ -5,18 +5,12 @@ import {getOrdersProduct} from "@/app/(main)/order/payment/[id]/actions";
 import OrderInfo from "@/components/order/payment/OrderInfo";
 import ShippingInfo from "@/components/order/payment/ShippingInfo";
 import OrderProducts from "@/components/order/payment/OrderProducts";
-import PaymentButton from "@/components/ui/PaymentButton";
 
-async function Page({ params }: { params: Promise<{ id: string }> }) {
-
-    const { id } = await params;
-    const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) return redirect('/login');
-    if (!id) return <div>결제정보를 찾을 수 없습니다.</div>;
-
-    // 주석 처리된 부분 활성화
+async function Page({params}:{params:Promise<{id:string}>}) {
+    const supabase = await createClient()
+    const {data:{user}}= await supabase.auth.getUser()
+    if(!user) redirect('/login')
+    const {id}=await params;
     const result = await getOrdersProduct(id);
 
     if (!result.success || !result.data) {
@@ -31,22 +25,17 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
             </div>
         );
     }
-
     const order = result.data;
-
     return (
         <div className="min-h-screen bg-gray-50 py-8">
             <div className="max-w-3xl mx-auto p-4">
                 <h1 className="text-2xl font-bold mb-6">결제 정보</h1>
-
-                <OrderInfo order={order} />
-                <ShippingInfo address={order.address} />
-                <OrderProducts products={order.products} />
-
-                {order.payment_status === 'pending' && <PaymentButton order={order} user={user}/>}
+                <OrderInfo order={order}/>
+                <ShippingInfo address={order.address}/>
+                <OrderProducts products={order.products}/>
             </div>
         </div>
-    );
+    )
 }
 
 export default Page;

@@ -13,6 +13,7 @@ import Link from "next/link";
 import {User} from "@supabase/supabase-js";
 import {signOut} from "@/app/(main)/login/actions";
 import {useRouter} from "next/navigation";
+import {Button} from "@/components/ui/button";
 function Menu({user}: {user: User|null}) {
     const [isOpen,setIsOpen]=useState(false);
     const router = useRouter();
@@ -24,6 +25,10 @@ function Menu({user}: {user: User|null}) {
             router.push('/login')
         }
         setIsOpen(false);
+    }
+    const handleShppoing=(type:string)=>{
+        router.push(`/products?searchType=${type}`);
+        setIsOpen(false)
     }
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -48,18 +53,18 @@ function Menu({user}: {user: User|null}) {
                             <div className="space-y-2">
                                 <h3 className="text-sm font-medium text-gray-500">쇼핑하기</h3>
                                 <div className="space-y-1">
-                                    <Link href="/products"
-                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    <button onClick={()=>handleShppoing('default')}
+                                          className="w-full text-start block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         전체 상품
-                                    </Link>
-                                    <Link href="/products/new"
-                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    </button>
+                                    <button onClick={() => handleShppoing('new')}
+                                            className="w-full text-start block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         신상품
-                                    </Link>
-                                    <Link href="/products/best"
-                                          className="block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
+                                    </button>
+                                    <button onClick={() => handleShppoing('best')}
+                                            className="w-full text-start block py-2 px-3 text-sm lg:text-lg font-medium hover:bg-gray-100 rounded-md transition-colors">
                                         인기 상품
-                                    </Link>
+                                    </button>
                                 </div>
                             </div>
 

@@ -3,17 +3,56 @@ import {Database} from "@/types/supabase";
 export type Products = Database['public']['Tables']['products']['Row'];
 export type Carts = Database['public']['Tables']['carts']['Row'];
 export type Orders = Database['public']['Tables']['orders']['Row'];
+
 export interface States {
     success: boolean;
     data: any | null;
     error: string | null;
 }
+
 export interface ColorOption {
     code: string;
     name: string;
 }
+export type OrderProduct = {
+    id: string;
+    order_id: string;
+    product_id: string;
+    variant_id: string;
+    quantity: number;
+    price: number;
+    color: string | null;
+    color_code: string | null;
+    created_at: string;
+
+    // 추가된 필드
+    product_name: string;          // 상품 이름 저장
+    product_image: string;         // 대표 이미지 URL 저장
+    variant_name: string | null;   // 변형 이름 (예: "블랙 / L")
+    original_price: number;        // 할인 전 원래 가격
+
+    // JOIN 할 때 사용되는 관계형 객체 (선택적)
+    product?: {
+        id: string;
+        name: string;
+        price: number;
+        sale_price: number | null;
+        images: string[];
+        inventory: number;
+        is_active: boolean;
+    };
+
+    product_variant?: {
+        id: string;
+        product_id: string;
+        color: string;
+        color_code: string;
+        inventory: number;
+        is_active: boolean;
+    };
+};
 export type ProductsJson = Products & {
-    colors:ColorOption[]
+    colors: ColorOption[]
     variants?: Array<{
         id: string;
         color: string;
@@ -22,26 +61,42 @@ export type ProductsJson = Products & {
         is_active: boolean;
     }>
 }
+
 export interface ColorVariant {
     color: string;
     colorCode: string;
     inventory: number | string;
 }
+
 export type CartItem = {
     id: string;
+    user_id: string;
     product_id: string;
+    variant_id: string;
     quantity: number;
     color: string;
     color_code: string;
-    product?: {
+    created_at?: string;
+    updated_at?: string;
+    product: {
         id: string;
         name: string;
         price: number;
         sale_price: number | null;
         images: string[];
         inventory: number;
-    }
+        is_active: boolean;
+    };
+    product_variant: {
+        id: string;
+        product_id: string;
+        color: string;
+        color_code: string;
+        inventory: number;
+        is_active: boolean;
+    };
 };
+
 //주소 타입
 export interface DaumPostcodeData {
     address: string;
@@ -57,6 +112,7 @@ export interface DaumPostcodeData {
     bname?: string;
     bcode?: string;
 }
+
 declare global {
     interface Window {
         daum: DaumPostcodeInstance;
@@ -68,9 +124,11 @@ declare global {
         BootPay: any;
     }
 }
+
 export interface DaumPostcodeInstance {
     Postcode: new (options: DaumPostcodeOptions) => DaumPostcode;
 }
+
 export interface DaumPostcodeOptions {
     oncomplete: (data: DaumPostcodeData) => void;
     onresize?: (size: { width: number; height: number }) => void;
@@ -81,6 +139,7 @@ export interface DaumPostcodeOptions {
     focusInput?: boolean;
     autoMapping?: boolean;
 }
+
 export interface DaumPostcode {
     open: () => void;
 }
@@ -98,6 +157,7 @@ export interface UserInfo {
     phone?: string;
     email?: string;
 }
+
 export interface BootpayPaymentProps {
     applicationId: string;  // 부트페이 애플리케이션 ID
     price: number;          // 결제 금액
@@ -119,5 +179,5 @@ export interface BootpayPaymentProps {
     className?: string;     // 버튼 CSS 클래스
     buttonText?: string;    // 버튼 텍스트
     disabled?: boolean;     // 버튼 비활성화 여부
-    formData:FormData;
+    formData: FormData;
 }

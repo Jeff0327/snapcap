@@ -105,7 +105,7 @@ export function CartList({ initialCartItems }: CartListProps) {
 
     // 장바구니 목록 UI
     return (
-        <Card className="bg-white rounded-lg shadow-md p-12 w-full max-w-3xl my-12 mx-auto">
+        <Card className="bg-white rounded-lg shadow-md p-12 w-full container my-12 mx-auto">
             <h2 className="text-xl font-jalnan mb-6 border-b pb-2">장바구니</h2>
 
             <div className="space-y-4">
