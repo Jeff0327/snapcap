@@ -1,3 +1,4 @@
+// types.ts
 import {Database} from "@/types/supabase";
 
 export type Products = Database['public']['Tables']['products']['Row'];
@@ -14,43 +15,58 @@ export interface ColorOption {
     code: string;
     name: string;
 }
-export type OrderProduct = {
-    id: string;
+
+
+export interface OrderCompleteView {
     order_id: string;
-    product_id: string;
-    variant_id: string;
-    quantity: number;
-    price: number;
-    color: string | null;
-    color_code: string | null;
-    created_at: string;
-
-    // 추가된 필드
-    product_name: string;          // 상품 이름 저장
-    product_image: string;         // 대표 이미지 URL 저장
-    variant_name: string | null;   // 변형 이름 (예: "블랙 / L")
-    original_price: number;        // 할인 전 원래 가격
-
-    // JOIN 할 때 사용되는 관계형 객체 (선택적)
-    product?: {
-        id: string;
-        name: string;
-        price: number;
-        sale_price: number | null;
-        images: string[];
-        inventory: number;
-        is_active: boolean;
-    };
-
-    product_variant?: {
+    order_number: string | null;
+    total_amount: number;
+    payment_method: string;
+    payment_status: string;
+    order_status: string;
+    notes: string | null;
+    order_created_at: string;
+    order_updated_at: string | null;
+    items_count: number;
+    primary_product_name: string | null;
+    primary_product_image: string | null;
+    user_id: string;
+    // 고객 정보
+    customer_id: string | null;
+    customer_name: string | null;
+    customer_email: string | null;
+    customer_phone: string | null;
+    verified_phone: string | null;
+    // 사용자 정보
+    user_email: string | null;
+    user_metadata: any;
+    app_metadata: any;
+    // 주소 정보
+    address_id: string | null;
+    recipient_name: string | null;
+    phone_number: string | null;
+    address_line1: string | null;
+    address_line2: string | null;
+    is_default_address: boolean | null;
+    // 주문 상품 정보 (JSONB 배열)
+    order_products: Array<{
         id: string;
         product_id: string;
-        color: string;
-        color_code: string;
-        inventory: number;
-        is_active: boolean;
-    };
-};
+        variant_id: string;
+        quantity: number;
+        price: number;
+        product_name: string | null;
+        product_image: string | null;
+        color: string | null;
+        color_code: string | null;
+    }>;
+}
+
+export interface OrdersResponse {
+    orders: OrderCompleteView[];
+    error: string | null;
+}
+
 export type ProductsJson = Products & {
     colors: ColorOption[]
     variants?: Array<{
@@ -62,6 +78,7 @@ export type ProductsJson = Products & {
     }>
 }
 
+// The rest of your existing types...
 export interface ColorVariant {
     color: string;
     colorCode: string;
@@ -96,7 +113,6 @@ export type CartItem = {
         is_active: boolean;
     };
 };
-
 //주소 타입
 export interface DaumPostcodeData {
     address: string;

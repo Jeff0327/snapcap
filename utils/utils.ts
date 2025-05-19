@@ -141,3 +141,20 @@ export function formatToNormalPhone(phone: string): string {
     // 이미 0으로 시작하거나 다른 형식이면 그대로 반환
     return cleaned;
 }
+// 전화번호를 E.164 형식으로 변환하는 함수
+export function formatToE164(phone: string): string {
+    // 전화번호에서 하이픈 등 숫자 외의 문자 제거
+    const cleaned = phone.replace(/\D/g, '');
+
+    // 한국 번호 형식 처리
+    if (cleaned.startsWith('0')) {
+        // 0으로 시작하면 국가 코드(+82)로 변환하고 첫 0 제거
+        return `+82${cleaned.substring(1)}`;
+    } else if (!cleaned.startsWith('82')) {
+        // 82로 시작하지 않으면 +82 추가
+        return `+82${cleaned}`;
+    } else {
+        // 이미 82로 시작하면 + 추가
+        return `+${cleaned}`;
+    }
+}

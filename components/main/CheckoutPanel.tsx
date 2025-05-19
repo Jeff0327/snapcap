@@ -53,20 +53,22 @@ export function CheckoutPanel({ product, user }: CheckoutPanelProps) {
         }
     };
 
-    const handleOrder = () => {
+    const handleOrder = async() => {
         if (!user) return router.push('/login');
 
-        // URL에 제품 ID, 수량, 색상 정보를 포함하여 주문 페이지로 이동
-        const queryParams = new URLSearchParams();
-        queryParams.append('quantity', quantity.toString());
-
-        if (selectedVariant) {
-            queryParams.append('variantId', selectedVariant.id);
-            queryParams.append('color', selectedVariant.color);
-            queryParams.append('colorCode', selectedVariant.color_code);
+        const formState = await addToCart({
+            productId: product.id,
+            quantity: quantity,
+            variantId: selectedVariant?.id,
+            colorName: selectedVariant?.color,
+            colorCode: selectedVariant?.color_code,
+            userId: user.id
+        });
+        if (formState.code === ERROR_CODES.SUCCESS) {
+            router.push('/cart')
+        } else {
+            notify.failure(formState.message);
         }
-
-        router.push(`/order/${product.id}?${queryParams.toString()}`);
     };
 
     // variant 선택 처리

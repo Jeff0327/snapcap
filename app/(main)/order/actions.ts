@@ -5,8 +5,24 @@ import {revalidatePath} from "next/cache";
 import {getCartItems} from "@/app/(main)/cart/actions";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import {FormState} from "@/components/ui/form";
-import {getOrderName} from "@/utils/utils";
+import {formatToE164, formatToNormalPhone, getOrderName} from "@/utils/utils";
+import {z} from "zod";
+import {AdminClient} from "@/utils/adminClient";
 
+const PhoneSchema = z.object({
+    phone: z.string()
+        .min(10, "전화번호를 정확히 입력해주세요.")
+        .regex(/^\d+$/, "숫자만 입력 가능합니다."),
+});
+
+const OtpVerificationSchema = z.object({
+    phone: z.string()
+        .min(10, "전화번호를 정확히 입력해주세요.")
+        .regex(/^\d+$/, "숫자만 입력 가능합니다."),
+    otp: z.string()
+        .length(6, "인증번호는 6자리여야 합니다.")
+        .regex(/^\d+$/, "숫자만 입력 가능합니다."),
+});
 export async function createOrder(formData: FormData): Promise<FormState> {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
@@ -44,7 +60,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     }
 
     // 필수 필드 검증
-    if (!recipientName || !addressLine1 || !addressLine2 || !phoneNumber) {
+    if (!recipientName || !addressLine1 || !phoneNumber) {
         return {
             code: ERROR_CODES.VALIDATION_ERROR,
             message: '주문자 정보와 배송지 정보를 확인해주세요.'
@@ -220,15 +236,11 @@ export async function createOrder(formData: FormData): Promise<FormState> {
         }
 
         // 7. 장바구니 비우기
-        const { error: clearCartError } = await supabase
+        await supabase
             .from('carts')
             .delete()
             .eq('user_id', user.id);
 
-        if (clearCartError) {
-            console.error('Failed to clear cart:', clearCartError);
-            // 장바구니 비우기 실패는 주문 진행에 치명적이지 않으므로 계속 진행
-        }
 
         // 8. 캐시 무효화
         revalidatePath('/cart');
@@ -423,6 +435,385 @@ export async function directPurchase(formData: FormData): Promise<FormState> {
         return {
             code: ERROR_CODES.SERVER_ERROR,
             message: '서버 에러가 발생하였습니다.'
+        };
+    }
+}
+
+/**
+ * 주문 처리 시 여러 계정의 주문을 통합하여 조회하는 함수
+ */
+// 인증번호 전송 로직
+// 전화번호 인증 코드 전송
+export async function verifyPhoneCodeServer(phone: string, otp: string) {
+    if (!phone || !otp) {
+        return {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: '전화번호와 인증번호를 모두 입력해주세요.'
+        };
+    }
+
+    try {
+        // 서버 측 Supabase 클라이언트 생성
+        const supabase = await createClient()
+        const adminSupabase = AdminClient();
+        const e164Phone = formatToE164(phone);
+        const normalPhone = formatToNormalPhone(phone);
+
+        // 1. 현재 로그인한 사용자 확인
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return {
+                code: ERROR_CODES.AUTH_ERROR,
+                message: '로그인이 필요합니다.'
+            };
+        }
+
+        const { error: metadataError } = await adminSupabase.auth.admin.updateUserById(
+            user.id,
+            {
+                user_metadata: {
+                    ...user.user_metadata, // 기존 메타데이터 유지
+                    verified_phone: normalPhone,
+                    phone_verified_at: new Date().toISOString(),
+                    verification_status: 'verified'
+                }
+            }
+        );
+
+        if (metadataError) {
+            console.error('사용자 메타데이터 업데이트 오류 (Admin):', metadataError);
+            // 메타데이터 업데이트 실패해도 계속 진행 (백업 방법으로)
+        } else {
+            console.log('사용자 메타데이터 업데이트 성공 (Admin)');
+        }
+
+        // 4. 백업/동기화: customers 테이블 업데이트
+        // maybeSingle() 사용으로 "no rows" 에러 방지
+        const { data: existingCustomer, error: customerError } = await supabase
+            .from('customers')
+            .select('id')
+            .eq('user_id', user.id)
+            .maybeSingle(); // single() 대신 maybeSingle() 사용
+
+        if (customerError) {
+            console.error('고객 정보 조회 오류:', customerError);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '고객 정보 조회 중 오류가 발생했습니다.'
+            };
+        }
+
+        // 고객 정보 업데이트 또는 생성
+        if (existingCustomer) {
+            // 기존 고객 정보 업데이트
+            const { error: updateError } = await supabase
+                .from('customers')
+                .update({
+                    phone: normalPhone,
+                    verified_phone: normalPhone,
+                    phone_verified_at: new Date().toISOString()
+                })
+                .eq('id', existingCustomer.id);
+
+            if (updateError) {
+                console.error('고객 정보 업데이트 오류:', updateError);
+                return {
+                    code: ERROR_CODES.DB_ERROR,
+                    message: '고객 정보 업데이트 중 오류가 발생했습니다.'
+                };
+            }
+        } else {
+            // 새 고객 정보 생성
+            const { error: insertError } = await supabase
+                .from('customers')
+                .insert({
+                    user_id: user.id,
+                    name: user.user_metadata?.full_name || user.email?.split('@')[0] || 'Guest',
+                    email: user.email || '',
+                    phone: normalPhone,
+                    verified_phone: normalPhone,
+                    phone_verified_at: new Date().toISOString()
+                });
+
+            if (insertError) {
+                console.error('고객 정보 생성 오류:', insertError);
+                return {
+                    code: ERROR_CODES.DB_ERROR,
+                    message: '고객 정보 생성 중 오류가 발생했습니다.'
+                };
+            }
+        }
+
+        // 4. 인증된 전화번호로 다른 계정 찾기
+        const { data: phoneCustomers, error: phoneCustomersError } = await supabase
+            .from('customers')
+            .select('user_id')
+            .eq('verified_phone', normalPhone)
+            .neq('user_id', user.id);
+
+        if (phoneCustomersError) {
+            console.error('관련 계정 조회 오류:', phoneCustomersError);
+            // 계속 진행 (선택적 단계)
+        }
+
+        // 5. 계정 연결 처리
+        let linkedCount = 0;
+        if (phoneCustomers && phoneCustomers.length > 0) {
+            for (const linkedCustomer of phoneCustomers) {
+                const { error: linkError } = await supabase
+                    .from('linked_accounts')
+                    .upsert({
+                        primary_user_id: user.id,
+                        linked_user_id: linkedCustomer.user_id,
+                        created_at: new Date().toISOString(),
+                        updated_at: new Date().toISOString()
+                    }, {
+                        onConflict: 'primary_user_id,linked_user_id'
+                    });
+
+                if (!linkError) {
+                    linkedCount++;
+                } else {
+                    console.error('계정 연결 오류:', linkError);
+                }
+            }
+        }
+
+        return {
+            code: ERROR_CODES.SUCCESS,
+            message: '전화번호 인증이 완료되었습니다.',
+            data: {
+                verified: true,
+                phone: normalPhone,
+                linkedAccounts: linkedCount
+            }
+        };
+
+    } catch (error) {
+        console.error('서버 측 전화번호 인증 오류:', error);
+        return {
+            code: ERROR_CODES.SERVER_ERROR,
+            message: '전화번호 인증 처리 중 오류가 발생했습니다.'
+        };
+    }
+}
+
+/**
+ * 클라이언트에서 인증번호 발송을 요청하는 서버 액션
+ */
+export async function sendVerificationCodeServer(phone: string) {
+    if (!phone) {
+        return {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: '전화번호를 입력해주세요.'
+        };
+    }
+
+    try {
+        // 서버 측 Supabase 클라이언트 생성
+        const supabase = await createClient()
+        const e164Phone = formatToE164(phone);
+
+        // 1. 현재 로그인한 사용자 확인
+        const { data: { user }, error: userError } = await supabase.auth.getUser();
+
+        if (userError || !user) {
+            return {
+                code: ERROR_CODES.AUTH_ERROR,
+                message: '로그인이 필요합니다.'
+            };
+        }
+
+        // 2. Admin API 또는 함수를 사용하여 인증 코드 발송
+        // 이 부분은 실제 백엔드 구현에 따라 다름
+        // Supabase Edge Functions을 통해 구현하거나 Admin API를 사용해야 함
+
+        // 간단한 예: 클라이언트 API를 사용하되 메타데이터에 인증 목적 표시
+        const { error: otpError } = await supabase.auth.signInWithOtp({
+            phone: e164Phone,
+            options: {
+                // 커스텀 메타데이터로 OTP 목적 명시
+                data: {
+                    purpose: 'verification',
+                    user_id: user.id,
+                    timestamp: new Date().toISOString()
+                }
+            }
+        });
+
+        if (otpError) {
+            console.error('OTP 전송 오류:', otpError);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: `인증번호 전송에 실패했습니다: ${otpError.message}`
+            };
+        }
+
+        return {
+            code: ERROR_CODES.SUCCESS,
+            message: '인증번호가 발송되었습니다.',
+            data: { phone: e164Phone }
+        };
+
+    } catch (error) {
+        console.error('인증번호 발송 오류:', error);
+        return {
+            code: ERROR_CODES.SERVER_ERROR,
+            message: '인증번호 발송 중 오류가 발생했습니다.'
+        };
+    }
+}
+
+// 인증번호 확인 및 계정 연결
+export async function verifyPhoneCode(phone: string, otp: string): Promise<FormState> {
+    if (!phone || !otp) {
+        return {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: '인증번호를 입력해주세요.'
+        }
+    }
+
+    const validationResult = OtpVerificationSchema.safeParse({
+        phone: phone.replace(/^\+/, ''),
+        otp
+    });
+
+    if (!validationResult.success) {
+        return {
+            code: ERROR_CODES.VALIDATION_ERROR,
+            message: '인증 정보가 올바르지 않습니다.'
+        };
+    }
+
+    try {
+        const supabase = await createClient();
+        const adminSupabase = AdminClient()
+        const e164Phone = formatToE164(phone);
+        const normalPhone = formatToNormalPhone(phone);
+
+        // 1. 현재 로그인한 사용자 정보 가져오기 (먼저 확인)
+        const { data: { user: currentUser } } = await supabase.auth.getUser();
+
+        if (!currentUser) {
+            return {
+                code: ERROR_CODES.AUTH_ERROR,
+                message: '로그인이 필요합니다.'
+            };
+        }
+
+        // 2. OTP 인증 (계정 전환 방지)
+        const { data, error } = await supabase.auth.verifyOtp({
+            phone: e164Phone,
+            token: otp,
+            type: 'sms',
+        });
+
+        if (error) {
+            console.error("OTP 확인 에러:", error);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '인증번호가 일치하지 않습니다.'
+            };
+        }
+
+        // 3. 사용자 메타데이터 업데이트 (auth.users 테이블)
+        const { error: updateError } = await adminSupabase.auth.updateUser({
+            data: {
+                verified_phone: normalPhone,
+                phone_verified_at: new Date().toISOString()
+            }
+        });
+
+        if (updateError) {
+            console.error("사용자 메타데이터 업데이트 에러:", updateError);
+            // 메타데이터 업데이트 실패해도 계속 진행
+        }
+
+        // 4. 현재 사용자의 customers 정보 업데이트
+        const { data: existingCustomer } = await supabase
+            .from('customers')
+            .select('id')
+            .eq('user_id', currentUser.id)
+            .single();
+
+        if (existingCustomer) {
+            // 기존 고객 정보 업데이트
+            await supabase
+                .from('customers')
+                .update({
+                    phone: normalPhone,
+                    verified_phone: normalPhone, // 추가: 인증된 전화번호 저장
+                    phone_verified_at: new Date().toISOString() // 추가: 인증 시간 저장
+                })
+                .eq('id', existingCustomer.id);
+        } else {
+            // 고객 정보가 없으면 새로 생성
+            const userMetadata = currentUser.user_metadata || {};
+
+            await supabase
+                .from('customers')
+                .insert({
+                    user_id: currentUser.id,
+                    name: userMetadata.full_name || 'Guest',
+                    email: currentUser.email || '',
+                    phone: normalPhone,
+                    verified_phone: normalPhone, // 추가: 인증된 전화번호 저장
+                    phone_verified_at: new Date().toISOString() // 추가: 인증 시간 저장
+                });
+        }
+
+        // 5. 동일한 전화번호를 가진 다른 계정 찾기 - verified_phone 필드 사용
+        const { data: phoneCustomers } = await supabase
+            .from('customers')
+            .select('user_id')
+            .eq('verified_phone', normalPhone) // 수정: phone → verified_phone
+            .neq('user_id', currentUser.id); // 현재 사용자 제외
+
+        // 6. 계정 연결 처리
+        let linkedCount = 0;
+        if (phoneCustomers && phoneCustomers.length > 0) {
+            try {
+                for (const linkedCustomer of phoneCustomers) {
+                    const { error: linkError } = await supabase
+                        .from('linked_accounts')
+                        .upsert({
+                            primary_user_id: currentUser.id,
+                            linked_user_id: linkedCustomer.user_id,
+                            link_type: 'phone', // 추가: 연결 유형 지정
+                            created_at: new Date().toISOString(),
+                            updated_at: new Date().toISOString()
+                        }, {
+                            onConflict: 'primary_user_id,linked_user_id'
+                        });
+
+                    if (!linkError) {
+                        linkedCount++;
+                    } else {
+                        console.error('계정 연결 실패:', linkError);
+                    }
+                }
+            } catch (linkError) {
+                console.error('계정 연결 중 오류:', linkError);
+                // 연결 실패해도 인증은 성공으로 처리
+            }
+        }
+
+        return {
+            code: ERROR_CODES.SUCCESS,
+            message: '전화번호 인증이 완료되었습니다.' +
+                (linkedCount > 0 ? ` ${linkedCount}개의 계정이 연결되었습니다.` : ''),
+            data: {
+                verified: true,
+                phone: normalPhone,
+                linkedAccounts: linkedCount
+            }
+        };
+    } catch (error) {
+        console.error("인증번호 확인 에러:", error);
+        return {
+            code: ERROR_CODES.SERVER_ERROR,
+            message: '인증번호 확인 중 오류가 발생했습니다.'
         };
     }
 }

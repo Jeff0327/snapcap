@@ -12,6 +12,7 @@ interface HeaderProps {
 function Header({ user, cartItemsCount = 0 }: HeaderProps) {
     const [scrolled, setScrolled] = useState(false);
     const pathname = usePathname()
+
     useEffect(() => {
         const handleScroll = () => {
             const isScrolled = window.scrollY > 10;

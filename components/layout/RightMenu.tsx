@@ -171,7 +171,7 @@ function RightMenu({user, cartItemsCount = 0}: { user: User | null, cartItemsCou
                     <Menu user={user}/>
 
                     {user.user_metadata.role === 'admin' && (
-                        <Link href="/admin">
+                        <Link href="/admin/dashboard">
                             <MdAdminPanelSettings className={'w-6 h-6'}/>
                         </Link>
                     )}

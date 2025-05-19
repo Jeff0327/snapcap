@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { CartItem } from '@/types';
@@ -42,28 +42,60 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
     const [name, setName] = useState("");
     // 배송지 정보
     const [recipientName, setRecipientName] = useState('');
-
     // 기타 상태
     const [sameAsOrderer, setSameAsOrderer] = useState(true);
 
-    // 주문자와 배송지 정보 동기화 처리
-    const handleSameAsOrdererChange = (checked: boolean) => {
-        setSameAsOrderer(checked);
+    // 무한 루프 방지를 위한 참조 값
+    const isUpdatingField = useRef(false);
 
-        if (checked) {
-            setRecipientName(name);
-            setContact(phone);
-        } else {
-            setRecipientName('');
-            setContact('');
+    // 필드 변경 시 체크박스 상태에 따라 처리
+    const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setName(newValue);
+
+        // 동기화 상태일 때만 수령인 이름도 업데이트
+        if (sameAsOrderer && !isUpdatingField.current) {
+            isUpdatingField.current = true;
+            setRecipientName(newValue);
+            setTimeout(() => {
+                isUpdatingField.current = false;
+            }, 0);
         }
     };
 
-    // 전화번호 인증 상태 업데이트
-    const handlePhoneVerified = (verified: boolean) => {
-        setVerified(verified);
+    // 전화번호 인증 상태 변경 처리
+    const handlePhoneVerified = (verifiedStatus: boolean) => {
+        setVerified(verifiedStatus);
+
+        // 인증 완료되고 동기화 상태일 때만 수령인 연락처 업데이트
+        if (verifiedStatus && sameAsOrderer && !isUpdatingField.current) {
+            isUpdatingField.current = true;
+            setContact(phone);
+            setTimeout(() => {
+                isUpdatingField.current = false;
+            }, 0);
+        }
     };
 
+    // 체크박스 상태 변경 처리
+    const handleSameAsOrdererChange = (checked: boolean) => {
+        if (isUpdatingField.current) return;
+
+        isUpdatingField.current = true;
+        setSameAsOrderer(checked);
+
+        if (checked) {
+            // 체크 시 주문자 정보로 배송지 정보 설정
+            setRecipientName(name);
+            setContact(phone);
+        }
+
+        setTimeout(() => {
+            isUpdatingField.current = false;
+        }, 0);
+    };
+
+    // 결과 처리
     const handleResult = (formState: FormState) => {
         if (formState.code === ERROR_CODES.SUCCESS) {
             router.push(`/order/payment/${formState.data}`);
@@ -72,7 +104,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
         }
     };
 
-    // 폼 제출 전에 유효성 확인
+    // 폼 제출 전 유효성 검증
     const handleBeforeSubmit = () => {
         if (!name.trim()) {
             notify.failure('주문자 이름을 입력해주세요.');
@@ -118,10 +150,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                                 id="name"
                                 name="name"
                                 value={name}
-                                onChange={(e) => {
-                                    setName(e.target.value);
-                                    if (sameAsOrderer) setRecipientName(e.target.value);
-                                }}
+                                onChange={handleNameChange}
                                 required
                             />
                         </div>
@@ -145,6 +174,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                             <h2 className="text-lg font-jalnan">배송지 정보</h2>
                             <div className="flex items-center gap-2 text-center">
                                 <Label htmlFor="sameAsOrderer" className="cursor-pointer mb-0">주문자 정보와 동일</Label>
+                                {/* 체크박스 사용 시 checked 속성과 onCheckedChange만 사용 */}
                                 <Checkbox
                                     id="sameAsOrderer"
                                     checked={sameAsOrderer}
@@ -186,6 +216,8 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                     <input type="hidden" name="email" value={user?.email || ''} />
                     <input type="hidden" name="ordererPhone" value={phone} />
                     <input type="hidden" name="ordererName" value={name} />
+                    {/* 사용자 ID도 함께 전달 */}
+                    <input type="hidden" name="userId" value={user?.id || ''} />
 
                     <Button
                         type="submit"
