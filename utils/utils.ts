@@ -158,3 +158,21 @@ export function formatToE164(phone: string): string {
         return `+${cleaned}`;
     }
 }
+// 숫자 포맷팅 함수
+export function formatNumber(num: number): string {
+    return num.toLocaleString('ko-KR');
+}
+
+// 금액 포맷팅 함수
+export function formatCurrency(amount: number): string {
+    return `₩${amount.toLocaleString('ko-KR')}`;
+}
+
+// 월 이름 가져오기
+export function getMonthName(month: number): string {
+    const months = [
+        '1월', '2월', '3월', '4월', '5월', '6월',
+        '7월', '8월', '9월', '10월', '11월', '12월'
+    ];
+    return months[month];
+}

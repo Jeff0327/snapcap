@@ -15,6 +15,8 @@ export async function editProduct(productId: string, formData: FormData): Promis
         const salePrice = formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null;
         const isActive = formData.get('is_active') === 'on';
         const description = formData.get('description') as string || '';
+        const type = formData.get('type') as string;
+
 
         // 이미지 배열 추출
         const images: string[] = [];
@@ -79,6 +81,7 @@ export async function editProduct(productId: string, formData: FormData): Promis
                 name,
                 sku,
                 description,
+                type,
                 images,
                 price,
                 sale_price: salePrice,

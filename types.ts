@@ -197,3 +197,26 @@ export interface BootpayPaymentProps {
     disabled?: boolean;     // 버튼 비활성화 여부
     formData: FormData;
 }
+
+// 대시보드 통계 데이터 타입
+export type DashboardStats = {
+    totalOrders: number;
+    totalRevenue: number;
+    pendingOrders: number;
+    newCustomers: number;
+    monthlySales: Array<{
+        month: string;
+        revenue: number;
+        orders: number;
+    }>;
+    topProducts: Array<{
+        product_id: string;
+        product_name: string;
+        total_quantity: number;
+        total_sales: number;
+    }>;
+    orderStatusDistribution: Array<{
+        status: string;
+        count: number;
+    }>;
+};

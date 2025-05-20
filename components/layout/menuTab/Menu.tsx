@@ -107,7 +107,7 @@ function Menu({user}: {user: User|null}) {
                         <div className="flex flex-col space-y-3">
                             {user && user.user_metadata.role === 'admin' && (
                                 <Link
-                                    href="/admin"
+                                    href="/admin/dashboard"
                                     className="flex items-center py-2 px-3 text-sm lg:text-lg font-medium text-black bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
                                 >
                                     <MdAdminPanelSettings className="w-5 h-5 mr-2"/>
