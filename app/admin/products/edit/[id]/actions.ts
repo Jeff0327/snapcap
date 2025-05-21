@@ -13,10 +13,8 @@ export async function editProduct(productId: string, formData: FormData): Promis
         const sku = formData.get('sku') as string || null;
         const price = parseFloat(formData.get('price') as string);
         const salePrice = formData.get('sale_price') ? parseFloat(formData.get('sale_price') as string) : null;
-        const isActive = formData.get('is_active') === 'on';
         const description = formData.get('description') as string || '';
         const type = formData.get('type') as string;
-
 
         // 이미지 배열 추출
         const images: string[] = [];
@@ -74,7 +72,14 @@ export async function editProduct(productId: string, formData: FormData): Promis
         // 총 재고 계산
         const totalInventory = variants.reduce((sum, v) => sum + (v.inventory || 0), 0);
 
-        // 상품 정보 업데이트
+        // Get current product to preserve is_active state
+        const { data: currentProduct } = await supabase
+            .from('products')
+            .select('is_active')
+            .eq('id', productId)
+            .single();
+
+        // 상품 정보 업데이트 (is_active 제외)
         const { error: productError } = await supabase
             .from('products')
             .update({
@@ -87,8 +92,8 @@ export async function editProduct(productId: string, formData: FormData): Promis
                 sale_price: salePrice,
                 colors,
                 inventory: totalInventory,
-                is_active: isActive,
                 tags: tags.length > 0 ? tags : null
+                // is_active 필드를 업데이트하지 않음
             })
             .eq('id', productId);
 
@@ -114,14 +119,14 @@ export async function editProduct(productId: string, formData: FormData): Promis
             };
         }
 
-        // 새 variants 추가 (색상별 재고 정보)
+        // 새 variants 추가 (색상별 재고 정보, 현재 product의 is_active 상태 유지)
         if (variants.length > 0) {
             const variantData = variants.map(variant => ({
                 product_id: productId,
                 color: variant.color,
                 color_code: variant.colorCode,
                 inventory: variant.inventory,
-                is_active: isActive
+                is_active: currentProduct?.is_active ?? true // 현재 product의 is_active 값 사용
             }));
 
             const { error: variantError } = await supabase
@@ -143,6 +148,54 @@ export async function editProduct(productId: string, formData: FormData): Promis
         };
     } catch (error: any) {
         console.error('상품 수정 서버 오류:', error);
+        return {
+            code: ERROR_CODES.SERVER_ERROR,
+            message: '서버 오류가 발생했습니다: ' + error.message
+        };
+    }
+}
+
+export async function toggleActiveStatus(
+    productId: string,
+    isActive: boolean
+): Promise<{ code: number; message: string }> {
+    const supabase = await createClient();
+
+    try {
+        // Update product active status
+        const { error: productError } = await supabase
+            .from('products')
+            .update({ is_active: isActive })
+            .eq('id', productId);
+
+        if (productError) {
+            console.error('제품 상태 변경 오류:', productError);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '상품 상태 변경 중 오류가 발생했습니다: ' + productError.message
+            };
+        }
+
+        // Also update all product variants with the same active status
+        const { error: variantError } = await supabase
+            .from('product_variants')
+            .update({ is_active: isActive })
+            .eq('product_id', productId);
+
+        if (variantError) {
+            console.error('제품 색상별 상태 변경 오류:', variantError);
+            return {
+                code: ERROR_CODES.DB_ERROR,
+                message: '색상별 상태 변경 중 오류가 발생했습니다: ' + variantError.message
+            };
+        }
+
+        return {
+            code: ERROR_CODES.SUCCESS,
+            message: isActive ? '상품이 활성화되었습니다.' : '상품이 비활성화되었습니다.'
+        };
+    } catch (error: any) {
+        console.error('상품 상태 변경 서버 오류:', error);
         return {
             code: ERROR_CODES.SERVER_ERROR,
             message: '서버 오류가 발생했습니다: ' + error.message

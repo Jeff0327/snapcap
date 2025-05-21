@@ -42,6 +42,7 @@ import { ERROR_CODES } from "@/utils/ErrorMessage";
 import FormContainer from "@/components/ui/form";
 import { Products } from "@/types";
 import {useLoading} from "@/components/layout/LoadingProvider";
+import ProductActiveToggle from "@/components/admin/products/ProductActiveToggle";
 
 export function ProductList({ products }: {products: Products[];}) {
     const { notify, confirm } = useAlert();
@@ -335,7 +336,7 @@ export function ProductList({ products }: {products: Products[];}) {
                                 </TableRow>
                             ) : (
                                 sortedProducts.map((product) => (
-                                    <TableRow key={product.id} className={product.is_active ? '' : 'bg-muted/20'}>
+                                    <TableRow key={product.id}>
                                         <TableCell>
                                             <Checkbox
                                                 checked={selectedProducts.includes(product.id)}
@@ -370,19 +371,10 @@ export function ProductList({ products }: {products: Products[];}) {
                                             </Badge>
                                         </TableCell>
                                         <TableCell>
-                                            <FormContainer action={toggleProductStatus} onResult={(result) => {
-                                                if (result.code === ERROR_CODES.SUCCESS) notify.success(result.message);
-                                                else notify.failure(result.message);
-                                            }}>
-                                                <input type="hidden" name="productId" value={product.id} />
-                                                <input type="hidden" name="isActive" value={product.is_active.toString()} />
-                                                <Switch
-                                                    checked={product.is_active}
-                                                    onCheckedChange={() =>
-                                                        handleToggleStatus(product.id, product.is_active, product.name)
-                                                    }
-                                                />
-                                            </FormContainer>
+                                            <ProductActiveToggle
+                                                productId={product.id}
+                                                initialActive={product.is_active}
+                                            />
                                         </TableCell>
                                         <TableCell className="text-right">
                                             <DropdownMenu>
@@ -392,17 +384,11 @@ export function ProductList({ products }: {products: Products[];}) {
                                                         <span className="sr-only">메뉴</span>
                                                     </Button>
                                                 </DropdownMenuTrigger>
-                                                <DropdownMenuContent align="end">
+                                                <DropdownMenuContent className={'bg-white'} align="end">
                                                     <DropdownMenuItem asChild>
                                                         <Link href={`/admin/products/edit/${product.id}`} className="cursor-pointer">
                                                             <PenSquare className="h-4 w-4 mr-2" />
                                                             수정
-                                                        </Link>
-                                                    </DropdownMenuItem>
-                                                    <DropdownMenuItem asChild>
-                                                        <Link href={`/products/${product.id}`} className="cursor-pointer">
-                                                            <Eye className="h-4 w-4 mr-2" />
-                                                            보기
                                                         </Link>
                                                     </DropdownMenuItem>
                                                     <DropdownMenuItem

@@ -6,7 +6,6 @@ import useAlert from '@/lib/notiflix/useAlert';
 import { useRouter } from 'next/navigation';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Switch } from '@/components/ui/switch';
 import ImageUploader from '@/components/admin/products/ImageUploader';
 import ColorVariantInput from '@/components/admin/products/ColorVariantInput';
 import TagsInput from '@/components/admin/products/TagsInput';
@@ -18,6 +17,7 @@ import { editProduct } from "@/app/admin/products/edit/[id]/actions";
 import Image from "next/image";
 import { ColorVariant} from "@/types";
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from "@/components/ui/select";
+import ProductActiveToggle from "@/components/admin/products/ProductActiveToggle";
 
 const ProductEditForm = ({ product }: { product: any }) => {
     const { notify, loading } = useAlert();
@@ -131,20 +131,6 @@ const ProductEditForm = ({ product }: { product: any }) => {
                     </Select>
                     {/* Hidden input for product type */}
                     <input type="hidden" name="type" value={productType}/>
-                </div>
-
-                <div className="flex items-center space-x-2 mt-8">
-                    <div className="relative">
-                        <Switch
-                            id="is_active"
-                            name="is_active"
-                            defaultChecked={product.is_active}
-                            className="peer h-6 w-11 rounded-full bg-gray-300 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 data-[state=checked]:bg-blue-600"
-                        />
-                        <span
-                            className="block absolute left-1 top-1 h-4 w-4 rounded-full bg-white transition-transform peer-data-[state=checked]:translate-x-5"></span>
-                    </div>
-                    <Label htmlFor="is_active">상품 활성화</Label>
                 </div>
             </div>
 
