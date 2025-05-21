@@ -121,19 +121,23 @@ export function CheckoutPanel({ product, user }: CheckoutPanelProps) {
                 <div className="mb-4">
                     <label className="font-medium block mb-2">색상</label>
                     <div className="flex flex-wrap gap-2">
-                        {product.variants &&product.variants.map((variant) => (
-                            <button
-                                key={variant.id}
-                                onClick={() => handleVariantSelect(variant)}
-                                disabled={!variant.is_active || variant.inventory <= 0}
-                                className={`w-8 h-8 rounded-full border-2 ${
-                                    selectedVariant?.id === variant.id
-                                        ? 'border-black'
-                                        : 'border-gray-200'
-                                } ${(!variant.is_active || variant.inventory <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
-                                style={{ backgroundColor: variant.color_code }}
-                                title={`${variant.color}${!variant.is_active || variant.inventory <= 0 ? ' (품절)' : ''}`}
-                            />
+                        {product.variants && product.variants.map((variant) => (
+                            <div key={variant.id} className={'flex flex-col items-center'}>
+                                <button
+                                    onClick={() => handleVariantSelect(variant)}
+                                    disabled={!variant.is_active || variant.inventory <= 0}
+                                    className={`w-8 h-8 rounded-full border-2 ${
+                                        selectedVariant?.id === variant.id
+                                            ? 'border-black'
+                                            : 'border-gray-200'
+                                    } ${(!variant.is_active || variant.inventory <= 0) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                    style={{backgroundColor: variant.color_code}}
+                                    title={`${variant.color}${!variant.is_active || variant.inventory <= 0 ? ' (품절)' : ''}`}
+                                >
+
+                                </button>
+                                <span className={'font-Nanum text-sm'}>{variant.color}</span>
+                            </div>
                         ))}
                     </div>
                     {hasVariants && !selectedVariant && (
