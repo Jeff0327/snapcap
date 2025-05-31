@@ -13,10 +13,6 @@ function Footer() {
                     <div className={'flex flex-col'}>
                         <h3 className="mb-4 text-2xl font-bold text-white">스냅캡</h3>
                         <BusinessCheck/>
-                        <div className={'flex flex-row items-center gap-1'}>
-                            <span className={'text-sm font-semibold text-white/80'}>개인정보 보호책임자 :</span>
-                            <p className={'text-sm'}>김지섭</p>
-                        </div>
                     </div>
                     <div>
                         <h4 className="mb-4 text-sm font-bold text-white">SNS</h4>

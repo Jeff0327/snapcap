@@ -1,6 +1,7 @@
 import React from 'react';
 import {createClient} from "@/utils/server";
 import {redirect} from "next/navigation";
+import UserInfoCard from "@/components/profile/UserInfo";
 
 async function Page() {
     const supabase = await createClient()
@@ -9,7 +10,7 @@ async function Page() {
 
     if(!user) return redirect('/login')
     return (
-        <div>유저정보</div>
+        <div className={'mt-10'}><UserInfoCard user={user}/></div>
     );
 }
 
