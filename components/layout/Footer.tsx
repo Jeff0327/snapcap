@@ -23,15 +23,17 @@ function Footer() {
                     </div>
                     <div>
                         <h4 className="mb-4 text-sm font-bold text-white">고객센터</h4>
+                        <ul>고객센터 운영시간
+                            <li>평일 : 09:00~18:00</li>
+                            <li>주말 및 공휴일 휴무</li>
+                        </ul>
+
                         <ul className="space-y-2 text-sm">
                             <li>
-                                <Link href="/contact/help">고객 센터</Link>
+                                <Link href="/contact/privacy">개인정보처리방침</Link>
                             </li>
                             <li>
                                 <Link href="/contact/deliver">배송 정책</Link>
-                            </li>
-                            <li>
-                                <Link href="/contact/exchange">교환 및 반품</Link>
                             </li>
                         </ul>
                     </div>

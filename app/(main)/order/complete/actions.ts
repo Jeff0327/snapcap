@@ -85,8 +85,6 @@ export async function getUserOrders() {
         // 중복 제거
         relatedUserIds = [...new Set(relatedUserIds)];
 
-        console.log('조회할 사용자 ID 목록:', relatedUserIds);
-
         // 3. 모든 관련 계정의 주문 조회
         const { data: orders, error } = await supabase
             .from('orders')
