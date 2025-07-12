@@ -3,7 +3,7 @@ import Header from "@/components/layout/Header";
 import Footer from "@/components/layout/Footer";
 import {createClient} from "@/utils/server";
 import {getCartItemsCount} from "@/app/(main)/cart/actions";
-
+import { Analytics } from "@vercel/analytics/next"
 async function Layout({children}:{children:ReactNode}) {
 
     const supabase = await createClient()
@@ -14,6 +14,7 @@ async function Layout({children}:{children:ReactNode}) {
         <div>
             <Header user={user} cartItemsCount={cartItemsCount}/>
             {children}
+            <Analytics/>
             <Footer/>
         </div>
     );

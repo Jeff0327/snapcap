@@ -67,8 +67,6 @@ const BootpayPayment = ({
                 }
             });
 
-            console.log('결제 응답:', response);
-
             // 결제 성공
             if (response.event === 'done') {
                 let updateResult;
@@ -112,7 +110,6 @@ const BootpayPayment = ({
             if (onDone) onDone();
 
         } catch (error) {
-            console.error('결제 처리 중 오류:', error);
             if (onFailure) onFailure(error);
         } finally {
             hideLoading();

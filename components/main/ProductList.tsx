@@ -13,6 +13,45 @@ interface ProductListProps {
 }
 
 function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListProps) {
+    // 🎯 상품의 품절 여부를 variants 기준으로 판단 (타입 안전하게)
+    const isProductOutOfStock = (product: Products) => {
+        // variants가 있는 경우 - 모든 variant가 품절이면 상품 품절
+        const productVariants = (product as any)?.variants;
+        if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
+            return !productVariants.some((variant: any) =>
+                (variant.is_active === true) && (variant.inventory || 0) > 0
+            );
+        }
+        // variants가 없는 경우 - 기본 재고 확인
+        return (product.inventory || 0) <= 0;
+    };
+
+    // 🎯 사용 가능한 색상 개수 계산 (타입 안전하게)
+    const getAvailableColorsCount = (product: Products) => {
+        const productVariants = (product as any)?.variants;
+        if (!productVariants || !Array.isArray(productVariants)) return 0;
+        return productVariants.filter((variant: any) =>
+            (variant.is_active === true) && (variant.inventory || 0) > 0
+        ).length;
+    };
+
+    // 🎯 총 재고 계산 (모든 variant 재고 합계) (타입 안전하게)
+    const getTotalInventory = (product: Products) => {
+        const productVariants = (product as any)?.variants;
+        if (productVariants && Array.isArray(productVariants) && productVariants.length > 0) {
+            return productVariants.reduce((total: number, variant: any) => {
+                return total + ((variant.is_active === true) ? (variant.inventory || 0) : 0);
+            }, 0);
+        }
+        return product.inventory || 0;
+    };
+
+    // 🎯 variants 존재 여부 확인 (타입 안전하게)
+    const hasVariants = (product: Products) => {
+        const productVariants = (product as any)?.variants;
+        return !!(productVariants && Array.isArray(productVariants) && productVariants.length > 0);
+    };
+
     return (
         <div className="py-1">
             {title && (
@@ -37,50 +76,140 @@ function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListP
                 </div>
             ) : (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-3">
-                    {products.map((product) => (
-                        <Link
-                            href={`/products/${product.id}`}
-                            key={product.id}
-                            className="group"
-                        >
-                            <div className="relative aspect-square overflow-hidden bg-gray-100 mb-2 rounded">
-                                {product.images && product.images.length > 0 ? (
-                                    <Image
-                                        src={product.images[0]}
-                                        alt={product.name}
-                                        fill
-                                        sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
-                                        className="object-cover transition-all duration-300 group-hover:scale-105"
-                                    />
-                                ) : (
-                                    <div className="w-full h-full flex items-center justify-center bg-gray-200">
-                                        <span className="text-gray-400">No Image</span>
-                                    </div>
-                                )}
+                    {products.map((product) => {
+                        const isOutOfStock = isProductOutOfStock(product);
+                        const availableColors = getAvailableColorsCount(product);
+                        const totalInventory = getTotalInventory(product);
+                        const productHasVariants = hasVariants(product);
 
-                                {/* 재고 없음 표시 */}
-                                {product.inventory <= 0 && (
-                                    <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
-                                        <span className="text-white font-medium">SOLD OUT</span>
-                                    </div>
-                                )}
-                            </div>
+                        return (
+                            <div key={product.id} className="group">
+                                {/* 🎯 품절 상품은 클릭 불가, 정상 상품은 클릭 가능 */}
+                                {isOutOfStock ? (
+                                    // 품절 상품 - 클릭 불가
+                                    <div className="cursor-not-allowed">
+                                        <div className="relative aspect-square overflow-hidden bg-gray-100 mb-2 rounded">
+                                            {product.images && product.images.length > 0 ? (
+                                                <Image
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    fill
+                                                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                                                    className="object-cover grayscale"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                    <span className="text-gray-400">No Image</span>
+                                                </div>
+                                            )}
 
-                            <div>
-                                <h3 className="text-xs sm:text-sm font-medium truncate">{product.name}</h3>
-                                <div>
-                                    {product.sale_price && product.sale_price < product.price ? (
-                                        <div className="flex items-center">
-                                            <span className="text-red-500 text-sm font-bold mr-2">{formatPrice(product.sale_price)}</span>
-                                            <span className="text-gray-400 text-xs line-through">{formatPrice(product.price)}</span>
+                                            {/* 🎯 품절 오버레이 */}
+                                            <div className="absolute inset-0 bg-black/60 flex items-center justify-center">
+                                                <div className="text-center">
+                                                    <span className="text-white font-bold text-lg">SOLD OUT</span>
+                                                    {productHasVariants && (
+                                                        <p className="text-white text-xs mt-1">모든 색상 품절</p>
+                                                    )}
+                                                </div>
+                                            </div>
                                         </div>
-                                    ) : (
-                                        <span className="text-sm font-bold">{formatPrice(product.price)}</span>
-                                    )}
-                                </div>
+
+                                        <div className="opacity-60">
+                                            <h3 className="text-xs sm:text-sm font-medium truncate text-gray-500">
+                                                {product.name}
+                                            </h3>
+                                            <div>
+                                                {product.sale_price && product.sale_price < product.price ? (
+                                                    <div className="flex items-center">
+                                                        <span className="text-gray-400 text-sm line-through mr-2">{formatPrice(product.sale_price)}</span>
+                                                        <span className="text-gray-400 text-xs line-through">{formatPrice(product.price)}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm text-gray-400 line-through">{formatPrice(product.price)}</span>
+                                                )}
+                                            </div>
+                                            {productHasVariants && (
+                                                <p className="text-xs text-gray-400 mt-1">전체 색상 품절</p>
+                                            )}
+                                        </div>
+                                    </div>
+                                ) : (
+                                    // 정상 상품 - 클릭 가능
+                                    <Link
+                                        href={`/products/${product.id}`}
+                                        className="block"
+                                    >
+                                        <div className="relative aspect-square overflow-hidden bg-gray-100 mb-2 rounded">
+                                            {product.images && product.images.length > 0 ? (
+                                                <Image
+                                                    src={product.images[0]}
+                                                    alt={product.name}
+                                                    fill
+                                                    sizes="(max-width: 640px) 50vw, (max-width: 768px) 33vw, (max-width: 1024px) 25vw, 20vw"
+                                                    className="object-cover transition-all duration-300 group-hover:scale-105"
+                                                />
+                                            ) : (
+                                                <div className="w-full h-full flex items-center justify-center bg-gray-200">
+                                                    <span className="text-gray-400">No Image</span>
+                                                </div>
+                                            )}
+
+                                            {/* 🎯 재고 정보 배지 */}
+                                            {productHasVariants && availableColors > 0 && (
+                                                <div className="absolute top-2 left-2 bg-blue-500 text-white text-xs px-2 py-1 rounded">
+                                                    {availableColors}색상
+                                                </div>
+                                            )}
+
+                                            {/* 🎯 신상품 배지 (7일 이내 등록된 상품) */}
+                                            {(() => {
+                                                const createdDate = new Date(product.created_at);
+                                                const now = new Date();
+                                                const daysDiff = Math.floor((now.getTime() - createdDate.getTime()) / (1000 * 60 * 60 * 24));
+                                                return daysDiff <= 7;
+                                            })() && (
+                                                <div className="absolute top-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">
+                                                    NEW
+                                                </div>
+                                            )}
+
+                                            {/* 🎯 할인 배지 */}
+                                            {product.sale_price && product.sale_price < product.price && (
+                                                <div className="absolute bottom-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">
+                                                    SALE
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div>
+                                            <h3 className="text-xs sm:text-sm font-medium truncate">
+                                                {product.name}
+                                            </h3>
+                                            <div>
+                                                {product.sale_price && product.sale_price < product.price ? (
+                                                    <div className="flex items-center">
+                                                        <span className="text-red-500 text-sm font-bold mr-2">{formatPrice(product.sale_price)}</span>
+                                                        <span className="text-gray-400 text-xs line-through">{formatPrice(product.price)}</span>
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-sm font-bold">{formatPrice(product.price)}</span>
+                                                )}
+                                            </div>
+
+                                            {/* 🎯 상품 상태 표시 */}
+                                            {!product.is_active && (
+                                                <div className="mt-1">
+                                                    <span className="text-xs text-red-500 bg-red-50 px-2 py-1 rounded">
+                                                        비활성화
+                                                    </span>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </Link>
+                                )}
                             </div>
-                        </Link>
-                    ))}
+                        );
+                    })}
                 </div>
             )}
         </div>

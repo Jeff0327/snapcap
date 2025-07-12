@@ -10,6 +10,7 @@ function UserInfoCard({ user }:{user:User}) {
 
 
     if(!user) redirect('/login')
+
     return (
         <Card className="mt-20 mx-auto p-6 rounded-lg shadow-lg">
             <div className="border-b pb-4 mb-6">
@@ -43,7 +44,9 @@ function UserInfoCard({ user }:{user:User}) {
                             {user.email_confirmed_at ? '인증됨' : '미인증'}
                         </span>
                     </div>
-
+                    <div>
+                        {user.user_metadata.phone ? user.user_metadata.phone : ''}
+                    </div>
                     <div className="bg-gray-50 p-4 rounded-lg">
                         <h3 className="text-sm font-medium text-gray-500 mb-1">가입일</h3>
                         <p className="text-gray-800">{formatDate(user.created_at)}</p>

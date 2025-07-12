@@ -2,19 +2,18 @@
 import React from 'react';
 import FormContainer, {FormState} from "@/components/ui/form";
 import {signIn} from "@/app/(main)/login/actions";
-import Link from "next/link";
 import {ERROR_CODES} from "@/utils/ErrorMessage";
 import useAlert from "@/lib/notiflix/useAlert";
 import {useRouter} from "next/navigation";
 import SocialLogin from "@/components/login/SocialLogin";
-import {User} from "@supabase/supabase-js";
+import Link from "next/link";
 
-function LoginForm({user}:{user:User|null}) {
+function LoginForm() {
     const {notify} = useAlert()
     const router = useRouter()
 
     const handleResult = (formState: FormState) => {
-        if(formState.code === ERROR_CODES.SUCCESS){
+        if (formState.code === ERROR_CODES.SUCCESS) {
             notify.success('로그인 하셨습니다. 환영합니다!')
             router.push('/')
         } else {
@@ -24,7 +23,7 @@ function LoginForm({user}:{user:User|null}) {
 
     return (
         <FormContainer action={signIn} onResult={handleResult}>
-            <input type="hidden" name="remember" defaultValue="true" />
+            <input type="hidden" name="remember" defaultValue="true"/>
             <div className="rounded-md shadow-sm -space-y-px">
                 <div>
                     <label htmlFor="email-address" className="sr-only">
@@ -55,27 +54,19 @@ function LoginForm({user}:{user:User|null}) {
                     />
                 </div>
             </div>
-
-            <div className="flex items-center justify-between mt-4">
-                <div className="flex items-center">
-                    <input
-                        id="remember-me"
-                        name="remember-me"
-                        type="checkbox"
-                        className="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded"
-                    />
-                    <label htmlFor="remember-me" className="ml-2 block text-sm text-gray-900">
-                        로그인 상태 유지
-                    </label>
-                </div>
-
+            <div className={'flex justify-end items-center mt-2 gap-1'}>
                 <div className="text-sm">
-                    <Link href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500">
-                        비밀번호를 잊으셨나요?
+                    <Link href="/forget/email" className="font-medium text-blue-600 hover:text-blue-500">
+                        아이디 찾기
+                    </Link>
+                </div>
+                <span className={'text-sm border-gray-400 border-r py-1.5'}/>
+                <div className="text-sm">
+                    <Link href="/forget/password" className="font-medium text-blue-600 hover:text-blue-500">
+                        비밀번호 찾기
                     </Link>
                 </div>
             </div>
-
             <div className="mt-6">
                 <button
                     type="submit"
@@ -84,7 +75,6 @@ function LoginForm({user}:{user:User|null}) {
                     로그인
                 </button>
             </div>
-
             <div className="flex items-center justify-center mt-4">
                 <div className="border-t border-gray-300 flex-grow mr-3"></div>
                 <span className="text-sm text-gray-500">또는</span>

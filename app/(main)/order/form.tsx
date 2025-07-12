@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { User } from '@supabase/supabase-js';
 import { CartItem } from '@/types';
@@ -45,54 +45,66 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
     // 기타 상태
     const [sameAsOrderer, setSameAsOrderer] = useState(true);
 
-    // 무한 루프 방지를 위한 참조 값
-    const isUpdatingField = useRef(false);
+    // 🎯 수정된 부분: useEffect로 동기화 처리
+    useEffect(() => {
+        if (sameAsOrderer) {
+            setRecipientName(name);
+        }
+    }, [name, sameAsOrderer]);
 
-    // 필드 변경 시 체크박스 상태에 따라 처리
+    useEffect(() => {
+        if (sameAsOrderer && verified) {
+            setContact(phone);
+        }
+    }, [phone, verified, sameAsOrderer]);
+
+    // 🎯 간소화된 이름 변경 핸들러
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         setName(newValue);
-
-        // 동기화 상태일 때만 수령인 이름도 업데이트
-        if (sameAsOrderer && !isUpdatingField.current) {
-            isUpdatingField.current = true;
-            setRecipientName(newValue);
-            setTimeout(() => {
-                isUpdatingField.current = false;
-            }, 0);
-        }
+        // useEffect가 자동으로 동기화 처리
     };
 
-    // 전화번호 인증 상태 변경 처리
+    // 🎯 간소화된 전화번호 인증 처리
     const handlePhoneVerified = (verifiedStatus: boolean) => {
         setVerified(verifiedStatus);
-
-        // 인증 완료되고 동기화 상태일 때만 수령인 연락처 업데이트
-        if (verifiedStatus && sameAsOrderer && !isUpdatingField.current) {
-            isUpdatingField.current = true;
-            setContact(phone);
-            setTimeout(() => {
-                isUpdatingField.current = false;
-            }, 0);
-        }
+        // useEffect가 자동으로 동기화 처리
     };
 
-    // 체크박스 상태 변경 처리
+    // 🎯 수정된 체크박스 상태 변경 처리
     const handleSameAsOrdererChange = (checked: boolean) => {
-        if (isUpdatingField.current) return;
-
-        isUpdatingField.current = true;
         setSameAsOrderer(checked);
 
         if (checked) {
-            // 체크 시 주문자 정보로 배송지 정보 설정
+            // 체크 시 즉시 주문자 정보로 설정
             setRecipientName(name);
-            setContact(phone);
+            if (verified) {
+                setContact(phone);
+            }
         }
+        // 체크 해제 시에는 기존 값 유지
+    };
 
-        setTimeout(() => {
-            isUpdatingField.current = false;
-        }, 0);
+    // 🎯 수령인 이름 변경 시 동기화 해제 처리
+    const handleRecipientNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setRecipientName(newValue);
+
+        // 수령인 이름이 주문자 이름과 다르면 동기화 해제
+        if (newValue !== name) {
+            setSameAsOrderer(false);
+        }
+    };
+
+    // 🎯 수령인 연락처 변경 시 동기화 해제 처리
+    const handleContactChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const newValue = e.target.value;
+        setContact(newValue);
+
+        // 수령인 연락처가 주문자 연락처와 다르면 동기화 해제
+        if (newValue !== phone) {
+            setSameAsOrderer(false);
+        }
     };
 
     // 결과 처리
@@ -106,6 +118,13 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
 
     // 폼 제출 전 유효성 검증
     const handleBeforeSubmit = () => {
+        console.log('🔍 폼 제출 전 검증:');
+        console.log('- 주문자 이름:', name);
+        console.log('- 수령인 이름:', recipientName);
+        console.log('- 주문자 연락처:', phone);
+        console.log('- 수령인 연락처:', contact);
+        console.log('- 인증 상태:', verified);
+
         if (!name.trim()) {
             notify.failure('주문자 이름을 입력해주세요.');
             return false;
@@ -174,7 +193,6 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                             <h2 className="text-lg font-jalnan">배송지 정보</h2>
                             <div className="flex items-center gap-2 text-center">
                                 <Label htmlFor="sameAsOrderer" className="cursor-pointer mb-0">주문자 정보와 동일</Label>
-                                {/* 체크박스 사용 시 checked 속성과 onCheckedChange만 사용 */}
                                 <Checkbox
                                     id="sameAsOrderer"
                                     checked={sameAsOrderer}
@@ -190,7 +208,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                                     id="recipientName"
                                     name="recipientName"
                                     value={recipientName}
-                                    onChange={(e) => setRecipientName(e.target.value)}
+                                    onChange={handleRecipientNameChange}
                                     required
                                 />
                             </div>
@@ -201,7 +219,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                                     id="phoneNumber"
                                     name="phoneNumber"
                                     value={contact}
-                                    onChange={(e) => setContact(e.target.value)}
+                                    onChange={handleContactChange}
                                     placeholder="'-' 없이 입력"
                                     required
                                 />

@@ -27,6 +27,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
+
     // 배송지 정보 추출
     const recipientName = formData.get('recipientName') as string;
     const addressLine1 = formData.get('address') as string;
@@ -34,6 +35,7 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     const phoneNumber = formData.get('phoneNumber') as string;
     const notes = formData.get('notes') as string || '';
 
+    console.log(recipientName)
     // 주문자 정보
     const ordererName = formData.get('ordererName') as string;
     const ordererPhone = formData.get('ordererPhone') as string;
@@ -476,7 +478,7 @@ export async function verifyPhoneCodeServer(phone: string, otp: string) {
                     ...user.user_metadata, // 기존 메타데이터 유지
                     verified_phone: normalPhone,
                     phone_verified_at: new Date().toISOString(),
-                    verification_status: 'verified'
+                    phone_verified:true
                 }
             }
         );

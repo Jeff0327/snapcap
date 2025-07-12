@@ -1,14 +1,8 @@
 import Link from "next/link";
 import RandomImage from "@/components/login/RandomImage";
 import LoginForm from "@/components/login/LoginForm";
-import {createClient} from "@/utils/server";
 
 async function Page() {
-
-    const supabase = await createClient()
-
-    const {data:{user}} = await supabase.auth.getUser()
-
 
     return (
         <div className={'grid grid-cols-1 md:grid-cols-2 items-center h-screen'}>
@@ -26,7 +20,7 @@ async function Page() {
                         </p>
                     </div>
 
-                    <LoginForm user={user}/>
+                    <LoginForm/>
                 </div>
             </div>
 
