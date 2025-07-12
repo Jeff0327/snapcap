@@ -100,8 +100,6 @@ export async function getUserOrders() {
             };
         }
 
-        console.log('조회된 주문 수:', orders?.length || 0);
-
         return {
             success: true,
             data: orders as Orders[] || []

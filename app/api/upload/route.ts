@@ -11,8 +11,6 @@ export async function POST(request: NextRequest) {
         const { searchParams } = new URL(request.url);
         const action = searchParams.get('action');
 
-        console.log("요청 액션:", action);
-
         if (action !== 'fileUpload') {
             console.error("잘못된 액션:", action);
             return NextResponse.json(
@@ -35,7 +33,6 @@ export async function POST(request: NextRequest) {
         let formData;
         try {
             formData = await request.formData();
-            console.log("폼 데이터 추출 성공");
         } catch (error) {
             console.error("폼 데이터 파싱 오류:", error);
             return NextResponse.json(
@@ -54,8 +51,6 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log("파일 정보:", file.name, file.type, file.size);
-
         if (!file.type.startsWith('image/')) {
             console.error("잘못된 파일 타입:", file.type);
             return NextResponse.json(
@@ -65,9 +60,7 @@ export async function POST(request: NextRequest) {
         }
 
         try {
-            console.log("이미지 업로드 시작");
             const result = await uploadImage(file);
-            console.log("업로드 결과:", result);
 
             if (result.code===ERROR_CODES.SUCCESS) {
                 return NextResponse.json({ success: true, data: result.data });
@@ -95,11 +88,8 @@ export async function POST(request: NextRequest) {
 
 async function uploadImage(file: File): Promise<FormState> {
     try {
-        console.log("Supabase 클라이언트 생성");
         const supabase = AdminClient();
         const supabaseClient = await createClient();
-
-        console.log("사용자 정보 확인");
         const { data: { user } } = await supabaseClient.auth.getUser();
 
         if (!user) {

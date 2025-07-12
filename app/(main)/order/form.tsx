@@ -118,12 +118,6 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
 
     // 폼 제출 전 유효성 검증
     const handleBeforeSubmit = () => {
-        console.log('🔍 폼 제출 전 검증:');
-        console.log('- 주문자 이름:', name);
-        console.log('- 수령인 이름:', recipientName);
-        console.log('- 주문자 연락처:', phone);
-        console.log('- 수령인 연락처:', contact);
-        console.log('- 인증 상태:', verified);
 
         if (!name.trim()) {
             notify.failure('주문자 이름을 입력해주세요.');

@@ -35,7 +35,6 @@ export async function createOrder(formData: FormData): Promise<FormState> {
     const phoneNumber = formData.get('phoneNumber') as string;
     const notes = formData.get('notes') as string || '';
 
-    console.log(recipientName)
     // 주문자 정보
     const ordererName = formData.get('ordererName') as string;
     const ordererPhone = formData.get('ordererPhone') as string;
@@ -486,8 +485,6 @@ export async function verifyPhoneCodeServer(phone: string, otp: string) {
         if (metadataError) {
             console.error('사용자 메타데이터 업데이트 오류 (Admin):', metadataError);
             // 메타데이터 업데이트 실패해도 계속 진행 (백업 방법으로)
-        } else {
-            console.log('사용자 메타데이터 업데이트 성공 (Admin)');
         }
 
         // 4. 백업/동기화: customers 테이블 업데이트

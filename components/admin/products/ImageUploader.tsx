@@ -24,9 +24,6 @@ const ImageUploader = ({ onImageUploaded, label = "이미지 업로드" }: Image
         const file = e.target.files?.[0];
         if (!file) return;
 
-        // 디버깅 로그 추가
-        console.log("파일 선택됨:", file.name, file.type, file.size);
-
         // 파일 타입 검증
         if (!file.type.startsWith('image/')) {
             notify.failure('이미지 파일만 업로드 가능합니다.');
@@ -45,8 +42,6 @@ const ImageUploader = ({ onImageUploaded, label = "이미지 업로드" }: Image
         try {
             const formData = new FormData();
             formData.append('files[0]', file);
-
-            console.log("업로드 요청 시작");
 
             // 모의 진행 상태를 표시하기 위한 인터벌
             const progressInterval = setInterval(() => {

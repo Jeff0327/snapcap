@@ -11,8 +11,6 @@ async function checkInventoryAvailability(orderId: string) {
     try {
         const supabase = await createClient();
 
-        console.log('📦 Variant 재고 확인 시작:', orderId);
-
         // 주문 상품 정보와 variant 정보 조회
         const { data: orderProducts, error: productsError } = await supabase
             .from('order_products')
@@ -27,8 +25,6 @@ async function checkInventoryAvailability(orderId: string) {
             console.error('주문 상품 조회 실패:', productsError);
             throw new Error('주문 상품 정보를 조회할 수 없습니다.');
         }
-
-        console.log('📋 재고 확인 상품 목록:', orderProducts);
 
         const inventoryChecks = [];
         let hasOutOfStock = false;
@@ -80,14 +76,6 @@ async function checkInventoryAvailability(orderId: string) {
             };
 
             inventoryChecks.push(checkResult);
-
-            console.log(`📦 ${checkResult.product_name}:`);
-            console.log(`  - 주문 수량: ${orderQuantity}`);
-            console.log(`  - 현재 재고: ${currentInventory}`);
-            console.log(`  - 재고 상태: ${isInStock ? '✅ 충분' : '❌ 부족'}`);
-            if (!isInStock) {
-                console.log(`  - 부족 수량: ${checkResult.shortage}`);
-            }
         }
 
         return {
@@ -258,8 +246,6 @@ async function sendPaymentNotificationSMS(orderData: {
             order_number: shortOrderNumber // 8자리 order_number로 교체
         };
 
-        console.log('📱 SMS 발송 데이터 (주소포함):', smsData);
-
         const response = await fetch(`${baseUrl}/api/twilio`, {
             method: 'POST',
             headers: {
@@ -275,7 +261,6 @@ async function sendPaymentNotificationSMS(orderData: {
         }
 
         const result = await response.json();
-        console.log('✅ 결제 알림 SMS 발송 성공:', result);
         return { success: true, data: result };
 
     } catch (error: any) {
@@ -288,8 +273,6 @@ async function deductInventory(orderId: string) {
     try {
         const supabase = await createClient();
 
-        console.log('📦 Variant 재고 차감 시작:', orderId);
-
         // 주문 상품 정보 조회 (variant_id 포함)
         const { data: orderProducts, error: productsError } = await supabase
             .from('order_products')
@@ -300,8 +283,6 @@ async function deductInventory(orderId: string) {
             console.error('주문 상품 조회 실패:', productsError);
             throw new Error('주문 상품 정보를 조회할 수 없습니다.');
         }
-
-        console.log('📋 차감할 상품 목록:', orderProducts);
 
         const inventoryUpdates = [];
 
@@ -324,11 +305,6 @@ async function deductInventory(orderId: string) {
                 const currentInventory = variant.inventory || 0;
                 const newInventory = currentInventory - orderQuantity;
                 const productName = (variant.products as any)?.name || '상품명 없음';
-
-                console.log(`📦 ${productName} - ${variant.color || '색상'}:`);
-                console.log(`  - 현재 재고: ${currentInventory}`);
-                console.log(`  - 주문 수량: ${orderQuantity}`);
-                console.log(`  - 차감 후: ${newInventory}`);
 
                 if (newInventory < 0) {
                     console.warn(`⚠️  재고 부족: ${productName} - ${variant.color} (재고: ${currentInventory}, 주문: ${orderQuantity})`);
@@ -354,7 +330,6 @@ async function deductInventory(orderId: string) {
                         error: updateError.message
                     });
                 } else {
-                    console.log(`✅ Variant 재고 차감 완료: ${productName} - ${variant.color} (${currentInventory} → ${newInventory})`);
                     inventoryUpdates.push({
                         type: 'variant',
                         variant_id: orderProduct.variant_id,
@@ -382,11 +357,6 @@ async function deductInventory(orderId: string) {
                 const currentInventory = product.inventory || 0;
                 const newInventory = currentInventory - orderQuantity;
 
-                console.log(`📦 ${product.name} (기본):`);
-                console.log(`  - 현재 재고: ${currentInventory}`);
-                console.log(`  - 주문 수량: ${orderQuantity}`);
-                console.log(`  - 차감 후: ${newInventory}`);
-
                 if (newInventory < 0) {
                     console.warn(`⚠️  재고 부족: ${product.name} (재고: ${currentInventory}, 주문: ${orderQuantity})`);
                 }
@@ -410,7 +380,6 @@ async function deductInventory(orderId: string) {
                         error: updateError.message
                     });
                 } else {
-                    console.log(`✅ 상품 재고 차감 완료: ${product.name} (${currentInventory} → ${newInventory})`);
                     inventoryUpdates.push({
                         type: 'product',
                         product_id: orderProduct.product_id,
@@ -449,9 +418,6 @@ export async function updateOrderPayment(orderId: string, paymentInfo: {
     try {
         const supabase = await createClient();
 
-        console.log('🔄 주문 결제 정보 업데이트 시작:', orderId);
-        console.log('💳 결제 정보:', paymentInfo);
-
         // 결제 정보와 주문 상태 업데이트
         const { data, error } = await supabase
             .from('orders')
@@ -473,17 +439,8 @@ export async function updateOrderPayment(orderId: string, paymentInfo: {
             };
         }
 
-        console.log('✅ 주문 결제 정보 업데이트 완료:', data);
-
         // 🎯 재고 차감 처리
         const inventoryResult = await deductInventory(orderId);
-
-        if (inventoryResult.success) {
-            console.log('✅ 재고 차감 완료:', inventoryResult);
-        } else {
-            console.error('❌ 재고 차감 실패:', inventoryResult.error);
-            // 재고 차감 실패해도 결제는 완료로 처리 (별도 관리 필요)
-        }
 
         // 주소 정보 조회
         const { data: addressData, error: addressError } = await supabase
@@ -504,9 +461,6 @@ export async function updateOrderPayment(orderId: string, paymentInfo: {
 
         const totalQuantity = orderProducts?.reduce((sum, item) => sum + (item.quantity || 0), 0) || 0;
 
-        console.log('📍 배송 주소:', addressData);
-        console.log('📦 총 수량:', totalQuantity);
-
         // SMS 발송 (재고 차감 정보 포함)
         sendPaymentNotificationSMS({
             primary_product_name: data.primary_product_name || '',
@@ -522,11 +476,7 @@ export async function updateOrderPayment(orderId: string, paymentInfo: {
             address_line2: addressData?.address_line2 || '',
             total_quantity: totalQuantity
         }).then(result => {
-            if (result.success) {
-                console.log('✅ 결제 알림 SMS API 호출 성공:', result.data?.messageSid);
-            } else {
-                console.error('❌ 결제 알림 SMS API 호출 실패:', result.error);
-            }
+
         }).catch(error => {
             console.error('❌ SMS API 호출 중 예외 발생:', error);
         });
@@ -558,8 +508,6 @@ async function restoreInventory(orderId: string) {
     try {
         const supabase = await createClient();
 
-        console.log('🔄 Variant 재고 복구 시작:', orderId);
-
         // 주문 상품 정보 조회 (variant_id 포함)
         const { data: orderProducts, error: productsError } = await supabase
             .from('order_products')
@@ -570,8 +518,6 @@ async function restoreInventory(orderId: string) {
             console.error('주문 상품 조회 실패:', productsError);
             throw new Error('주문 상품 정보를 조회할 수 없습니다.');
         }
-
-        console.log('📋 복구할 상품 목록:', orderProducts);
 
         const inventoryRestores = [];
 
@@ -593,11 +539,6 @@ async function restoreInventory(orderId: string) {
                 const restoreQuantity = orderProduct.quantity;
                 const newInventory = currentInventory + restoreQuantity;
 
-                console.log(`📦 ${variant.products?.name} - ${variant.color}:`);
-                console.log(`  - 현재 재고: ${currentInventory}`);
-                console.log(`  - 복구 수량: ${restoreQuantity}`);
-                console.log(`  - 복구 후: ${newInventory}`);
-
                 // Variant 재고 업데이트
                 const { error: updateError } = await supabase
                     .from('product_variants')
@@ -618,7 +559,6 @@ async function restoreInventory(orderId: string) {
                         error: updateError.message
                     });
                 } else {
-                    console.log(`✅ Variant 재고 복구 완료: ${variant.products?.name} - ${variant.color} (${currentInventory} → ${newInventory})`);
                     inventoryRestores.push({
                         type: 'variant',
                         variant_id: orderProduct.variant_id,
@@ -647,11 +587,6 @@ async function restoreInventory(orderId: string) {
                 const restoreQuantity = orderProduct.quantity;
                 const newInventory = currentInventory + restoreQuantity;
 
-                console.log(`📦 ${product.name} (기본):`);
-                console.log(`  - 현재 재고: ${currentInventory}`);
-                console.log(`  - 복구 수량: ${restoreQuantity}`);
-                console.log(`  - 복구 후: ${newInventory}`);
-
                 // 기본 상품 재고 업데이트
                 const { error: updateError } = await supabase
                     .from('products')
@@ -671,7 +606,6 @@ async function restoreInventory(orderId: string) {
                         error: updateError.message
                     });
                 } else {
-                    console.log(`✅ 상품 재고 복구 완료: ${product.name} (${currentInventory} → ${newInventory})`);
                     inventoryRestores.push({
                         type: 'product',
                         product_id: orderProduct.product_id,
@@ -726,8 +660,7 @@ export async function cancelOrder(orderId: string): Promise<FormState> {
 
         // 결제 완료된 주문이면 재고 복구
         if (data.payment_status === 'paid') {
-            const restoreResult = await restoreInventory(orderId);
-            console.log('재고 복구 결과:', restoreResult);
+            await restoreInventory(orderId);
         }
 
         revalidatePath('/orders');

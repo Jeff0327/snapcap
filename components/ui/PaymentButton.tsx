@@ -72,7 +72,6 @@ const PaymentButton = ({ order, user, disabled = false }: PaymentButtonProps) =>
     // 🎯 수정된 주문 업데이트 핸들러 - 재고 확인 포함
     const handleOrderUpdate = async (paymentOrderId: string, paymentData: any) => {
         try {
-            console.log('💰 결제 처리 시작 - 재고 재확인');
 
             // 1단계: 결제 전 재고 재확인
             const inventoryValidation = await validateInventoryBeforePayment(order.id);
@@ -82,20 +81,11 @@ const PaymentButton = ({ order, user, disabled = false }: PaymentButtonProps) =>
                 throw new Error(inventoryValidation.message);
             }
 
-            console.log('✅ 재고 확인 완료 - 결제 처리 진행');
-
             // 2단계: 실제 주문 업데이트 (재고 차감 포함)
             const updateResult = await updateOrderPayment(order.id, paymentData);
 
             if (!updateResult.success) {
                 throw new Error(updateResult.message || '주문 업데이트에 실패했습니다.');
-            }
-
-            console.log('✅ 주문 업데이트 완료:', updateResult);
-
-            // 재고 차감 결과 로깅
-            if (updateResult.data?.inventory_deduction) {
-                console.log('📦 재고 차감 결과:', updateResult.data.inventory_deduction);
             }
 
             return updateResult;
@@ -110,7 +100,6 @@ const PaymentButton = ({ order, user, disabled = false }: PaymentButtonProps) =>
     const handlePaymentSuccess = async (data: any) => {
         try {
             setPaymentProcessing(true);
-            console.log('✅ 결제 성공:', data);
 
             // 결과 확인
             if (data.updateResult && data.updateResult.success) {
@@ -119,7 +108,6 @@ const PaymentButton = ({ order, user, disabled = false }: PaymentButtonProps) =>
                 // 재고 차감 성공 메시지 추가
                 if (data.updateResult.data?.inventory_deduction?.success) {
                     const updatedProducts = data.updateResult.data.inventory_deduction.updates.length;
-                    console.log(`📦 ${updatedProducts}개 상품의 재고가 차감되었습니다.`);
                 }
 
                 router.push(`/order/complete/${order.id}`);
@@ -159,7 +147,6 @@ const PaymentButton = ({ order, user, disabled = false }: PaymentButtonProps) =>
 
     // 결제 취소 처리
     const handlePaymentCancel = (data: any) => {
-        console.log('결제 취소:', data);
         notify.warning('결제가 취소되었습니다.');
     };
 

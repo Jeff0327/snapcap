@@ -81,7 +81,6 @@ const BootpayPayment = ({
                             paymentData: response.data
                         });
 
-                        console.log('주문 상태 업데이트 결과:', updateResult);
                     } catch (updateError) {
                         console.error('주문 상태 업데이트 실패:', updateError);
                         updateResult = { success: false, error: updateError };
@@ -102,7 +101,6 @@ const BootpayPayment = ({
             }
             // 결제 취소
             else if (response.event === 'cancel') {
-                console.log("결제취소");
                 if (onCancel) onCancel(response);
             }
 

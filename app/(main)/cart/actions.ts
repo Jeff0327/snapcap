@@ -119,7 +119,6 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
                 .map(item => item.id);
 
             if (invalidItemIds.length > 0) {
-                console.log(`자동으로 제거할 장바구니 항목 수: ${invalidItemIds.length}`);
 
                 // 비동기로 처리하고 결과 기다리지 않음 (성능 최적화)
                 supabase
@@ -130,7 +129,6 @@ export async function getCartItems(userId: string): Promise<CartItem[]> {
                         if (error) {
                             console.error('무효한 장바구니 항목 삭제 실패:', error);
                         } else {
-                            console.log(`${invalidItemIds.length}개의 무효한 장바구니 항목이 자동으로 제거되었습니다.`);
                             // 캐시 무효화
                             revalidatePath('/cart');
                         }

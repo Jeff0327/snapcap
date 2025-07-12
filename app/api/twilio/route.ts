@@ -102,21 +102,14 @@ export async function POST(request: NextRequest) {
             );
         }
 
-        console.log('📱 결제 알림 SMS 요청 수신 (주소포함):', data);
-
         // 내 휴대폰번호
         const myPhone = process.env.MY_PHONE!;
 
         // SMS 메시지 생성
         const message = createPaymentMessage(data);
 
-        console.log('📝 발송할 SMS 내용:');
-        console.log(message);
-
         // Twilio SMS 발송
         const result = await sendTwilioSMS(myPhone, message);
-
-        console.log('✅ SMS 발송 성공:', result.sid);
 
         return NextResponse.json({
             success: true,
@@ -163,17 +156,10 @@ export async function GET(request: NextRequest) {
             total_quantity: 3
         };
 
-        console.log('🧪 테스트 SMS 발송 시작 (주소포함)');
-
         const myPhone = process.env.MY_PHONE!;
         const message = createPaymentMessage(testData);
 
-        console.log('📝 테스트 SMS 내용:');
-        console.log(message);
-
         const result = await sendTwilioSMS(myPhone, message);
-
-        console.log('✅ 테스트 SMS 발송 성공:', result.sid);
 
         return NextResponse.json({
             success: true,

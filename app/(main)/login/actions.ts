@@ -25,7 +25,6 @@ export async function signIn(formData: FormData): Promise<FormState> {
         });
 
         if (error) {
-            console.log('error:',error)
             return {
                 code: ERROR_CODES.AUTH_ERROR,
                 message: "이메일 또는 비밀번호가 올바르지 않습니다."
