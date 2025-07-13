@@ -23,7 +23,7 @@ async function Page({ searchParams }: { searchParams:Promise< { searchType: stri
     const title = titleMap[type] || type.toUpperCase();
 
     return (
-        <div className="container mx-auto px-4 py-8 mt-16">
+        <div className="container mx-auto px-4 py-8">
             <ProductList
                 products={products}
                 title={title}

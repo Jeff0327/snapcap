@@ -56,7 +56,7 @@ function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListP
     return (
         <div className="py-1">
             {title && (
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-4 mt-12">
                     <h2 className="text-lg lg:text-2xl font-jalnan">{title}</h2>
 
                     {viewAllLink && (
