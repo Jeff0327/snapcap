@@ -15,11 +15,16 @@ const config: Config = {
             },
             animation: {
                 fadeIn: 'fadeIn 1s ease-in-out forwards',
+                shine: 'shine 5s linear infinite',
             },
             keyframes: {
                 fadeIn: {
                     '0%': {opacity: '0'},
                     '100%': {opacity: '1'},
+                },
+                shine: {
+                  '0%': { 'background-position': '100%' },
+                  '100%': { 'background-position': '-100%' },
                 },
             },
         },

@@ -296,12 +296,6 @@ export function CheckoutPanel({ product, user, className = "" }: CheckoutPanelPr
                     </button>
                 </div>
 
-                {/* 🎯 수량 관련 안내 메시지 */}
-                {quantity >= getCurrentMaxInventory() && getCurrentMaxInventory() > 0 && (
-                    <p className="text-orange-500 text-xs mt-1">
-                        최대 주문 가능 수량에 도달했습니다.
-                    </p>
-                )}
                 {quantity > getCurrentMaxInventory() && (
                     <p className="text-red-500 text-xs mt-1">
                         재고가 부족합니다. 최대 {getCurrentMaxInventory()}개까지 주문 가능합니다.

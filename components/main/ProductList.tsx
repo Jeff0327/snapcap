@@ -5,6 +5,7 @@ import Image from 'next/image';
 import { Products } from "@/types";
 import { formatPrice } from "@/utils/utils";
 import { IoIosArrowForward } from "react-icons/io";
+import RotatingText from "@/components/ui/rotateText";
 
 interface ProductListProps {
     products: Products[]|[];
@@ -175,8 +176,19 @@ function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListP
 
                                             {/* 🎯 할인 배지 */}
                                             {product.sale_price && product.sale_price < product.price && (
-                                                <div className="absolute bottom-2 left-2 bg-red-500 text-white text-xs px-2 py-1 rounded font-bold">
-                                                    SALE
+                                                <div className="absolute bottom-0 left-0 text-white text-xs px-2 py-1 rounded font-bold">
+                                                    <RotatingText
+                                                        texts={['SALE','배송비무료']}
+                                                        mainClassName="px-2 sm:px-2 md:px-3 bg-red-500 text-white overflow-hidden py-0.5 sm:py-1 px-2 md:py-2 justify-center rounded-sm"
+                                                        staggerFrom={"last"}
+                                                        initial={{ y: "100%" }}
+                                                        animate={{ y: 0 }}
+                                                        exit={{ y: "-120%" }}
+                                                        staggerDuration={0.025}
+                                                        splitLevelClassName="overflow-hidden"
+                                                        transition={{ type: "spring", damping: 30, stiffness: 400 }}
+                                                        rotationInterval={2000}
+                                                    />
                                                 </div>
                                             )}
                                         </div>

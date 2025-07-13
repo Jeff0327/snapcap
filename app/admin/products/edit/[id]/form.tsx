@@ -189,9 +189,9 @@ const ProductEditForm = ({ product }: { product: any }) => {
 
             <div className="flex justify-center md:justify-end mt-6 gap-2">
                 <Button variant="outline" size="lg" asChild>
-                    <Link href="/admin/products">취소</Link>
+                    <Link className={'border border-black'} href="/admin/products">취소</Link>
                 </Button>
-                <SubmitButton text="상품 수정" />
+                <SubmitButton text="상품 수정" className={'border border-black'}/>
             </div>
         </FormContainer>
     );
