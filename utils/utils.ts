@@ -43,29 +43,22 @@ export function getOrderName(items: CartItem[]): string {
     return `${firstItemName} 외 ${items.length - 1}개`;
 }
 
-// 주문 상태 텍스트 변환
-export function getOrderStatusText(status: string): string {
-    switch(status) {
-        case 'pending': return '주문 대기';
-        case 'processing': return '처리 중';
-        case 'shipped': return '배송 중';
-        case 'delivered': return '배송 완료';
-        case 'cancelled': return '주문 취소';
-        case 'returned': return '반품';
-        default: return status;
-    }
-}
+// 주문 상태 옵션 - DB 제약조건에 맞춤
+export const ORDER_STATUS_OPTIONS = [
+    { value: 'pending', label: '주문 접수' },
+    { value: 'processing', label: '처리 중' },
+    { value: 'completed', label: '처리 완료' },
+    { value: 'cancelled', label: '주문 취소' },
+    { value: 'returned', label: '반품' }
+] as const;
 
-// 결제 상태 텍스트 변환
-export function getPaymentStatusText(status: string): string {
-    switch(status) {
-        case 'pending': return '결제 대기';
-        case 'paid': return '결제 완료';
-        case 'failed': return '결제 실패';
-        case 'refunded': return '환불';
-        default: return status;
-    }
-}
+// 결제 상태 옵션
+export const PAYMENT_STATUS_OPTIONS = [
+    { value: 'pending', label: '결제 대기' },
+    { value: 'paid', label: '결제 완료' },
+    { value: 'failed', label: '결제 실패' },
+    { value: 'refunded', label: '환불 완료' }
+] as const;
 
 // 날짜 포맷팅
 export function formatDate(dateString: string): string {
@@ -176,3 +169,40 @@ export function getMonthName(month: number): string {
     ];
     return months[month];
 }
+
+// 결제 상태별 색상 (다크모드 지원)
+export const getPaymentStatusColor = (status: string): string => {
+    const statusColors: { [key: string]: string } = {
+        pending: "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+        paid: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200",
+        failed: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200",
+        refunded: "bg-purple-200 text-purple-800 dark:bg-purple-900 dark:text-purple-200",
+    };
+    return statusColors[status.toLowerCase()] || "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+};
+
+// 주문 상태별 색상 (다크모드 지원)
+export const getOrderStatusColor = (status: string): string => {
+    const statusColors: { [key: string]: string } = {
+        pending: "bg-yellow-200 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-200",
+        processing: "bg-blue-200 text-blue-800 dark:bg-blue-900 dark:text-blue-200",
+        completed: "bg-green-200 text-green-800 dark:bg-green-900 dark:text-green-200",
+        cancelled: "bg-red-200 text-red-800 dark:bg-red-900 dark:text-red-200",
+        returned: "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200",
+    };
+    return statusColors[status.toLowerCase()] || "bg-gray-200 text-gray-800 dark:bg-gray-700 dark:text-gray-200";
+};
+// 주문 상태 라벨 가져오기
+export const getOrderStatusLabel = (status: string): string => {
+    const option = ORDER_STATUS_OPTIONS.find(option => option.value === status);
+    return option?.label || status;
+};
+// 결제 상태 라벨 가져오기
+export const getPaymentStatusLabel = (status: string): string => {
+    const option = PAYMENT_STATUS_OPTIONS.find(option => option.value === status);
+    return option?.label || status;
+};
+// 통합 상태 라벨 가져오기 함수
+export const getStatusLabel = (status: string, type: 'order' | 'payment'): string => {
+    return type === 'order' ? getOrderStatusLabel(status) : getPaymentStatusLabel(status);
+};

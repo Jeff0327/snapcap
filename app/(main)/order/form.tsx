@@ -110,6 +110,7 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
     // 결과 처리
     const handleResult = (formState: FormState) => {
         if (formState.code === ERROR_CODES.SUCCESS) {
+            notify.success('주문내역이 추가되었습니다.')
             router.push(`/order/payment/${formState.data}`);
         } else {
             notify.failure(`${formState.message}`);

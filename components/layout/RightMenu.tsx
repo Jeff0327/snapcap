@@ -28,7 +28,12 @@ import useAlert from "@/lib/notiflix/useAlert";
 import Menu from "@/components/layout/menuTab/Menu";
 import {searchProduct} from "@/app/(main)/products/actions";
 
-function RightMenu({user, cartItemsCount = 0}: { user: User | null, cartItemsCount?: number }) {
+interface RightMenuProps {
+    user: User | null;
+    cartItemsCount?: number;
+    orderCount?: number; // 주문 개수 추가
+}
+function RightMenu({user, cartItemsCount = 0, orderCount = 0}: RightMenuProps) {
     const [searchOpen, setSearchOpen] = useState(false);
     const searchInputRef = useRef<HTMLInputElement>(null);
     const router = useRouter()
@@ -211,7 +216,7 @@ function RightMenu({user, cartItemsCount = 0}: { user: User | null, cartItemsCou
                             <Sun className={'w-5 h-5'}/>
                         )}
                     </Toggle>
-                    <Menu user={user}/>
+                    <Menu user={user} orderCount={orderCount}/>
 
                     {user.user_metadata.role === 'admin' && (
                         <Link href="/admin/dashboard" className="text-black dark:text-white">
@@ -274,7 +279,7 @@ function RightMenu({user, cartItemsCount = 0}: { user: User | null, cartItemsCou
                         )}
                     </Toggle>
 
-                    <Menu user={null}/>
+                    <Menu user={null} orderCount={0}/>
                 </div>
             )}
         </>

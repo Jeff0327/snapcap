@@ -9,10 +9,10 @@ import {Button} from "@/components/ui/button";
 interface HeaderProps {
     user: User | null;
     cartItemsCount?: number; // 장바구니 아이템 개수 추가
+    orderCount?: number;
 }
-function Header({ user, cartItemsCount = 0 }: HeaderProps) {
+function Header({ user, cartItemsCount = 0, orderCount=0 }: HeaderProps) {
     const [scrolled, setScrolled] = useState(false);
-    const pathname = usePathname()
 
     useEffect(() => {
         const handleScroll = () => {
@@ -40,7 +40,7 @@ function Header({ user, cartItemsCount = 0 }: HeaderProps) {
                     SNAPCAP
                 </Link>
                 <div className={'text-black'}>
-                    <UserInfo user={user} cartItemsCount={cartItemsCount} />
+                    <UserInfo user={user} cartItemsCount={cartItemsCount} orderCount={orderCount}/>
                 </div>
             </div>
         </header>

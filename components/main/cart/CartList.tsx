@@ -92,10 +92,10 @@ export function CartList({ initialCartItems }: CartListProps) {
         return (
             <div className="text-center py-10">
                 <h2 className="text-2xl font-bold mb-4">장바구니가 비어있습니다</h2>
-                <p className="text-gray-600 mb-6">쇼핑을 계속하고 마음에 드는 상품을 장바구니에 추가해보세요.</p>
+                <p className="text-gray-600 dark:text-white text-sm mb-6">쇼핑을 계속하고 마음에 드는 상품을 장바구니에 추가해보세요.</p>
                 <button
                     onClick={() => router.push('/main')}
-                    className="px-6 py-2 bg-black text-white rounded-md hover:bg-gray-800"
+                    className="px-6 py-2 bg-black dark:bg-white font-GongGothic dark:text-black text-white rounded-md hover:bg-gray-800"
                 >
                     쇼핑 계속하기
                 </button>

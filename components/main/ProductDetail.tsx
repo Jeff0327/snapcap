@@ -154,21 +154,6 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                         ) : (
                             <p className="text-3xl font-bold text-gray-900 dark:text-white">{formatPrice(product.price)}</p>
                         )}
-
-                        {/* 재고 정보 */}
-                        <div className="mt-3 flex items-center">
-                            {product.inventory > 0 ? (
-                                <div className="flex items-center text-green-600">
-                                    <div className="w-2 h-2 bg-green-600 rounded-full mr-2"></div>
-                                    <span className="text-sm font-medium">재고 있음 ({product.inventory}개)</span>
-                                </div>
-                            ) : (
-                                <div className="flex items-center text-red-600">
-                                    <div className="w-2 h-2 bg-red-600 rounded-full mr-2"></div>
-                                    <span className="text-sm font-medium">품절</span>
-                                </div>
-                            )}
-                        </div>
                     </div>
 
                     {/* 색상 옵션 - null 체크와 함께 표시 */}

@@ -18,8 +18,8 @@ async function Page() {
     const orders = result.success ? (result.data || []) : [];
 
     return (
-        <div className="max-w-4xl mx-auto p-8 mt-8 lg:mt-12">
-            <h1 className="text-2xl font-jalnan mb-6">주문 내역</h1>
+        <div className="max-w-4xl mx-auto p-8">
+            <h1 className="text-2xl font-jalnan mb-6 mt-12">주문 내역</h1>
 
             {!result.success ? (
                 <div className="bg-red-100 text-red-700 p-4 rounded-md">

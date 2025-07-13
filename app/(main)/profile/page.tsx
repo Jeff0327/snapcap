@@ -10,7 +10,7 @@ async function Page() {
 
     if(!user) return redirect('/login')
     return (
-        <div className={'mt-10'}><UserInfoCard user={user}/></div>
+        <div><UserInfoCard user={user}/></div>
     );
 }
 
