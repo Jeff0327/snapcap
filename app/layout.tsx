@@ -64,6 +64,9 @@ export const metadata: Metadata = {
     },
     verification: {
         google: 'M4gPHM4WLn0OLlqFMQ6Q0OsqscuaHWSXkGjtiuJMtuc', // Google Search Console 인증 코드
+        other: {
+            'naver-site-verification': 'ce440d5a2a840901d9d8ecf805a3d95d5bd3cf61',
+        }
     },
 };
 
@@ -97,6 +100,10 @@ export default function RootLayout({
             <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
             <meta name="googlebot" content="index, follow" />
             <meta name="bingbot" content="index, follow" />
+
+            {/* Search Engine Verification */}
+            <meta name="google-site-verification" content="M4gPHM4WLn0OLlqFMQ6Q0OsqscuaHWSXkGjtiuJMtuc" />
+            <meta name="naver-site-verification" content="ce440d5a2a840901d9d8ecf805a3d95d5bd3cf61" />
 
             {/* Korean specific */}
             <meta httpEquiv="Content-Language" content="ko" />
