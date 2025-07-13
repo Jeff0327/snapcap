@@ -7,7 +7,7 @@ const ShippingInfo = ({ address }: { address: any }) => {
     </div>;
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 text-black">
             <h2 className="text-xl font-semibold mb-4 border-b pb-2">배송지 정보</h2>
 
             <div className="space-y-3">

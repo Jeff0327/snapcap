@@ -235,8 +235,8 @@ export default function OrderFormMultiple({ cartItems, user }: OrderFormMultiple
                         type="submit"
                         className={`font-jalnan w-full py-6 mt-4 text-lg rounded-lg text-white ${
                             isSubmitDisabled
-                                ? 'bg-blue-300 cursor-not-allowed'
-                                : 'bg-blue-500 hover:bg-blue-600'
+                                ? 'bg-blue-300 cursor-not-allowed dark:bg-green-500 dark:text-white'
+                                : 'bg-blue-500 hover:bg-blue-600 dark:bg-green-700 dark:text-white'
                         }`}
                         disabled={isSubmitDisabled}
                     >

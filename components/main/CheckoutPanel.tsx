@@ -167,7 +167,7 @@ export function CheckoutPanel({ product, user, className = "" }: CheckoutPanelPr
     };
 
     return (
-        <div className={`bg-white rounded-lg shadow-md p-4 lg:p-6 w-full ${className}`}>
+        <div className={`bg-white text-black rounded-lg shadow-md p-4 lg:p-6 w-full ${className}`}>
             {/* 🎯 모바일에서 더 컴팩트한 제목 */}
             <h3 className="text-base lg:text-lg font-bold border-b pb-2 lg:pb-3 mb-3 lg:mb-4">주문 정보</h3>
 

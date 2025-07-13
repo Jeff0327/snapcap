@@ -129,10 +129,10 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                             </div>
                         )}
 
-                        <h1 className="text-3xl font-bold text-gray-900">{product.name}</h1>
+                        <h1 className="text-3xl font-bold text-gray-900 dark:text-white">{product.name}</h1>
 
                         {product.sku && (
-                            <p className="text-sm text-gray-500 mt-2">SKU: {product.sku}</p>
+                            <p className="text-sm text-gray-500 mt-2 dark:text-white">SKU: {product.sku}</p>
                         )}
                     </div>
 
@@ -141,7 +141,7 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                         {discountRate ? (
                             <div className="space-y-1">
                                 <div className="flex items-center">
-                                    <span className="text-3xl font-bold text-gray-900">
+                                    <span className="text-3xl font-bold text-gray-900 dark:text-white">
                                         {formatPrice(product.sale_price as number)}
                                     </span>
                                     <span
@@ -149,10 +149,10 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                         {discountRate}% OFF
                                     </span>
                                 </div>
-                                <p className="text-gray-500 line-through">{formatPrice(product.price)}</p>
+                                <p className="text-gray-500 dark:text-white line-through">{formatPrice(product.price)}</p>
                             </div>
                         ) : (
-                            <p className="text-3xl font-bold text-gray-900">{formatPrice(product.price)}</p>
+                            <p className="text-3xl font-bold text-gray-900 dark:text-white">{formatPrice(product.price)}</p>
                         )}
 
                         {/* 재고 정보 */}
@@ -197,7 +197,7 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
 
                     {/* 배송 및 서비스 정보 */}
                     <div className="pt-6 border-t border-gray-100">
-                        <h3 className="text-sm font-medium text-gray-900 mb-3">배송 및 서비스</h3>
+                        <h3 className="text-sm font-medium text-gray-900 mb-3 dark:text-white">배송 및 서비스</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div className="flex items-start">
                                 <div className="p-2 bg-indigo-50 rounded-lg mr-3">
@@ -208,8 +208,8 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-900">무료 배송</p>
-                                    <p className="text-xs text-gray-500">*일부지역 제외</p>
+                                    <p className="text-xs font-medium text-gray-900 dark:text-white">무료 배송</p>
+                                    <p className="text-xs text-gray-500 dark:text-indigo-500">*일부지역 제외</p>
                                 </div>
                             </div>
                             <div className="flex items-start">
@@ -221,8 +221,8 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-900">10일 이내 <br/>무료 반품</p>
-                                    <p className="text-xs text-gray-500">빠른 반품 서비스</p>
+                                    <p className="text-xs font-medium text-gray-900 dark:text-white">10일 이내 <br/>무료 반품</p>
+                                    <p className="text-xs text-gray-500 dark:text-indigo-600">빠른 반품 서비스</p>
                                 </div>
                             </div>
                             <div className="flex items-start">
@@ -234,8 +234,8 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-900">당일 출고</p>
-                                    <p className="text-xs text-gray-500">오전 시간 주문 시</p>
+                                    <p className="text-xs font-medium text-gray-900 dark:text-white">빠른 출고</p>
+                                    <p className="text-xs text-gray-500 dark:text-indigo-600">결제 확인 후 배송</p>
                                 </div>
                             </div>
                             <div className="flex items-start">
@@ -247,8 +247,8 @@ export function ProductDetail({ product }: {product: ProductsJson}) {
                                     </svg>
                                 </div>
                                 <div>
-                                    <p className="text-xs font-medium text-gray-900">안전 결제</p>
-                                    <p className="text-xs text-gray-500">안전한 결제 시스템</p>
+                                    <p className="text-xs font-medium text-gray-900 dark:text-white">안전 결제</p>
+                                    <p className="text-xs text-gray-500 dark:text-indigo-600">안전한 결제 시스템</p>
                                 </div>
                             </div>
                         </div>

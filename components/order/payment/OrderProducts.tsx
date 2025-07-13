@@ -32,7 +32,7 @@ export default function OrderProducts({ products, inventoryCheck }: OrderProduct
     }
 
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 text-black">
             <h2 className="text-lg font-bold mb-4">주문 상품</h2>
 
             <div className="space-y-4">

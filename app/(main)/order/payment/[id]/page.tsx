@@ -43,9 +43,9 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
         const outOfStockProducts = inventoryCheck.checks.filter(check => !check.is_in_stock);
 
         return (
-            <div className="min-h-screen py-8 mt-8 lg:mt-12">
-                <div className="max-w-3xl mx-auto p-4">
-                    <h1 className="text-2xl font-bold mb-6">결제 정보</h1>
+            <div className="min-h-screen text-black">
+                <div className="max-w-3xl mx-auto p-4 mt-12">
+                    <h1 className="text-2xl font-bold mb-6 dark:text-white text-black">결제 정보</h1>
 
                     {/* 🚨 품절 경고 */}
                     <div className="bg-red-50 border border-red-200 rounded-lg p-6 mb-6">
@@ -99,9 +99,9 @@ async function Page({ params }: { params: Promise<{ id: string }> }) {
 
     // 🎯 정상적인 결제 페이지
     return (
-        <div className="min-h-screen py-8 mt-8 lg:mt-12">
-            <div className="max-w-3xl mx-auto p-4">
-                <h1 className="text-2xl font-bold mb-6">결제 정보</h1>
+        <div className="min-h-screen py-8 text-black">
+            <div className="max-w-3xl mx-auto p-4 mt-12">
+                <h1 className="text-2xl font-bold mb-6 dark:text-white text-black">결제 정보</h1>
 
                 {/* ✅ 재고 확인 완료 알림 (결제 대기 상태일 때만) */}
                 {order.payment_status === 'pending' && canProceed && (

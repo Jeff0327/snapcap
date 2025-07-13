@@ -15,9 +15,9 @@ async function Page({params}:{params:Promise<{id:string}>}) {
 
     if (!result.success || !result.data) {
         return (
-            <div className="min-h-screen bg-gray-50 py-8">
+            <div className="min-h-screen py-8">
                 <div className="max-w-3xl mx-auto p-4">
-                    <div className="bg-white rounded-lg shadow-md p-6 text-center">
+                    <div className="bg-white dark:bg-[#121212] rounded-lg shadow-md p-6 text-center">
                         <h1 className="text-2xl font-bold mb-4">결제 정보를 찾을 수 없습니다.</h1>
                         <p className="text-gray-600">{result.message || '주문 정보를 불러오는 중 오류가 발생했습니다.'}</p>
                     </div>
@@ -27,8 +27,8 @@ async function Page({params}:{params:Promise<{id:string}>}) {
     }
     const order = result.data;
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="max-w-3xl mx-auto p-4">
+        <div className="min-h-screen py-8">
+            <div className="max-w-3xl mx-auto p-4 mt-12">
                 <h1 className="text-2xl font-bold mb-6">결제 정보</h1>
                 <OrderInfo order={order}/>
                 <ShippingInfo address={order.address}/>

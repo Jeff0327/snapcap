@@ -62,7 +62,7 @@ function ProductList({ products, title = "PRODUCTS", viewAllLink }: ProductListP
                     {viewAllLink && (
                         <Link
                             href={viewAllLink}
-                            className="flex flex-row items-center font-semibold text-gray-700 hover:text-black transition-colors"
+                            className="flex flex-row items-center font-semibold dark:text-white text-gray-700 hover:text-black transition-colors"
                         >
                             더보기
                             <IoIosArrowForward className="w-5 h-5 ml-1" />

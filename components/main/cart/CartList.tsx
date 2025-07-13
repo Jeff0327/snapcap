@@ -106,7 +106,7 @@ export function CartList({ initialCartItems }: CartListProps) {
     // 장바구니 목록 UI
     return (
         <Card className="bg-white rounded-lg shadow-md p-12 w-full container my-12 mx-auto">
-            <h2 className="text-xl font-jalnan mb-6 border-b pb-2">장바구니</h2>
+            <h2 className="text-xl font-jalnan mb-6 border-b pb-2 text-black">장바구니</h2>
 
             <div className="space-y-4">
                 {cartItems.map(item => (
@@ -128,7 +128,7 @@ export function CartList({ initialCartItems }: CartListProps) {
                         </div>
 
                         {/* 상품 정보 */}
-                        <div className="ml-4 flex-grow">
+                        <div className="ml-4 flex-grow text-black">
                             <div className="flex justify-between">
                                 <h3 className="font-medium">{item.product?.name}</h3>
                                 <button
@@ -180,7 +180,7 @@ export function CartList({ initialCartItems }: CartListProps) {
 
             {/* 주문 요약 */}
             <div className="mt-6 pt-4 border-t">
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex justify-between items-center mb-4 text-black">
                     <span className="font-bold">총 합계</span>
                     <span className="font-bold text-xl">{formatPrice(getTotalPrice())}</span>
                 </div>

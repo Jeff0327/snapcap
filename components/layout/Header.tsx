@@ -4,6 +4,7 @@ import Link from "next/link";
 import {User} from "@supabase/supabase-js";
 import UserInfo from "@/components/layout/RightMenu";
 import {usePathname} from "next/navigation";
+import {Button} from "@/components/ui/button";
 
 interface HeaderProps {
     user: User | null;
@@ -31,14 +32,14 @@ function Header({ user, cartItemsCount = 0 }: HeaderProps) {
     return (
         <header className={`fixed top-0 w-full z-10 ${
             scrolled
-                ? 'border-b backdrop-blur-sm bg-gradient-to-r bg-white/50'
+                ? 'border-b backdrop-blur-sm bg-gradient-to-r bg-white/50 dark:bg-[#121212]'
                 : ''
         }`}>
             <div className="container flex items-center justify-between h-16 px-4 mx-auto">
-                <Link href="/" className={`text-2xl font-GongGothic text-black`}>
+                <Link href="/" className={`text-2xl font-GongGothic text-black dark:text-white`}>
                     SNAPCAP
                 </Link>
-                <div className={`${pathname.includes('/main') ? "text-black" : 'text-black'}`}>
+                <div className={'text-black'}>
                     <UserInfo user={user} cartItemsCount={cartItemsCount} />
                 </div>
             </div>

@@ -35,9 +35,9 @@ export default async function Page({
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 py-8">
-            <div className="p-4 w-full">
-                <h1 className="text-2xl font-bold mb-6 text-center">배송정보</h1>
+        <div className="min-h-screen py-8">
+            <div className="p-4 w-full bg-white mt-12 dark:bg-[#121212] text-black">
+                <h1 className="text-2xl font-bold mb-6 text-center text-black dark:text-white">배송정보</h1>
                 <OrderFormMultiple cartItems={cartItems} user={user}/>
             </div>
         </div>

@@ -11,7 +11,7 @@ async function Layout({children}:{children:ReactNode}) {
 
     const cartItemsCount = user ? await getCartItemsCount(user.id) : 0;
     return (
-        <div>
+        <div className={'bg-white dark:bg-[#121212] dark:text-white'}>
             <Header user={user} cartItemsCount={cartItemsCount}/>
             {children}
             <Analytics/>

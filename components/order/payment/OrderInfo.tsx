@@ -4,7 +4,7 @@ import {formatPrice} from "@/utils/utils";
 
 const OrderInfo = ({ order }: { order: any }) => {
     return (
-        <div className="bg-white rounded-lg shadow-md p-6 mb-6">
+        <div className="bg-white rounded-lg shadow-md p-6 mb-6 text-black">
             <h2 className="text-xl font-semibold mb-4 border-b pb-2">주문 정보</h2>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

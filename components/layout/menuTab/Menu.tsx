@@ -33,7 +33,7 @@ function Menu({user}: {user: User|null}) {
     return (
         <Sheet open={isOpen} onOpenChange={setIsOpen}>
             <SheetTrigger asChild>
-                <button onClick={()=>setIsOpen(true)} className="focus:outline-none">
+                <button onClick={()=>setIsOpen(true)} className="focus:outline-none text-black dark:text-white">
                     <CgMenuRightAlt className="w-6 h-6"/>
                     <span className="sr-only">메뉴</span>
                 </button>
